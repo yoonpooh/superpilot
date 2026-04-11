@@ -1,0 +1,4 @@
+interface:
+  display_name: "Superpilot"
+  short_description: "Collaborative design to autonomous implementation for existing repositories"
+  default_prompt: "Handle this existing-repository task with Superpilot: collaborate on the design first, write a spec and plan, investigate root cause before fixes when debugging, execute autonomously with TDD and optional subagents, review the diff harshly, verify with evidence, and do not publish unless explicitly asked."
