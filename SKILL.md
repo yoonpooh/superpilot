@@ -76,6 +76,7 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - skip spec, plan, and implementation
 - inspect the diff and return findings only
 - do not patch unless the user explicitly asks for fixes
+- still apply the same review standard, but treat findings as report output rather than internal patch work
 
 ## Hard Rules
 
@@ -91,8 +92,9 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - Every review pass must run mandatory trace activities, walk through every checklist item, and answer every adversarial question against the diff. A review pass that skips any of these is not a valid pass and does not count toward the zero-findings exit condition.
 - Mandatory trace activities require tracing actual code paths (failure paths, state consistency, access control, input boundaries), not checking boxes. If the diff has an external API call, trace what happens when it fails. If the diff has a new endpoint, compare its access control to existing endpoints. If the diff updates state in two places, trace what happens when one update fails.
 - Treat review findings as internal work items unless the user explicitly asks for a review-only report.
+- For implementation tasks, do not call the work complete until the internal review loop has already absorbed and patched all in-scope actionable findings.
 - Do not call the task complete until a fresh final review pass after the last patch also returns zero actionable findings.
-- If a subsequent "code review" request on the same diff would find real issues, the original review loop failed. The review must be thorough enough that a second independent review finds nothing new.
+- If a subsequent "code review" request on the same finished diff would find real in-scope issues, the original review loop failed. The review must be thorough enough that a second independent review should not uncover anything new.
 - Never claim completion without fresh verification evidence.
 - Do not do speculative refactoring or unrelated cleanup.
 - Do not commit, push, or publish unless the user explicitly asks.

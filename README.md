@@ -31,7 +31,7 @@ Most agent workflow systems rely on stacking multiple external skills together. 
 | **Plan** | Decompose into executable tasks with file targets, test expectations, and verification steps |
 | **Debug** | When the task involves a bug: investigate root cause with evidence before proposing fixes |
 | **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green |
-| **Review** | Harsh diff-based review loops until actionable findings reach zero |
+| **Review** | Harsh diff-based review loops until actionable findings reach zero; for implementation work, fix findings inside the loop before completion |
 | **Verify** | Run fresh evidence-based verification — no "should work now" claims allowed |
 
 The original user request is treated as authorization to continue once the spec is clear enough to write correctly. The agent stops only for real safety gates.
@@ -41,7 +41,7 @@ The original user request is treated as authorization to continue once the spec 
 - **Self-contained** — no external workflow skills needed; runtime tools and subagents are used directly
 - **Spec and plan first** — non-trivial work always gets a written spec and implementation plan
 - **TDD by default** — no production code without a failing test first (when a test surface exists)
-- **Harsh review** — review the diff, not the codebase; loop until zero actionable findings remain
+- **Harsh review** — review the diff, not the codebase; for implementation work, absorb and patch findings inside the loop until zero actionable findings remain
 - **Evidence over confidence** — verification must produce observable proof, not assertions
 - **Minimal clarification** — ask only when the answer prevents building the wrong thing
 - **Scope discipline** — no speculative refactoring, no unrelated cleanup

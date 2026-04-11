@@ -73,7 +73,7 @@ Those are confidence statements, not verification.
 
 ## Coverage Check
 
-Before final completion, re-read the current spec and plan and confirm:
+Before final completion of an implementation task, re-read the current spec and plan and confirm:
 
 - every in-scope requirement is implemented
 - every critical behavior has a proving check
@@ -118,7 +118,7 @@ Subagents may report their own checks, but the main agent must still verify the 
 
 ## Minimum Final Check
 
-Before the final handoff:
+Before the final handoff for an implementation task:
 
 1. re-check the current spec
 2. re-check the plan
@@ -127,3 +127,14 @@ Before the final handoff:
 5. run the strongest relevant verification
 6. confirm the diff matches the claimed result
 7. only then write the completion summary
+
+## Review-Only Final Check
+
+Before the final handoff for a review-only task:
+
+1. confirm the task stayed in review-only mode
+2. confirm no code was patched during the review
+3. confirm the findings are backed by the reviewed artifact
+4. confirm the findings are ordered by severity
+5. confirm residual risks or testing gaps are noted when relevant
+6. only then deliver the findings report

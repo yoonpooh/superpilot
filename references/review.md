@@ -4,7 +4,7 @@
 
 Review should be stricter than implementation. The goal is to prove the change is ready, not to feel good about it.
 
-Review the diff until actionable findings reach zero.
+For implementation tasks, review the diff until actionable findings reach zero.
 
 By default, review is an internal quality gate, not a user-facing report.
 
@@ -13,14 +13,15 @@ If the task itself is review-only, this stage becomes the primary deliverable:
 - inspect the diff with the same harsh standard
 - return findings ordered by severity
 - do not patch unless the user explicitly asks for fixes
+- capture the review artifact from its actual source (local diff, branch diff, commit diff, PR patch, changed files)
 
 ## Review Scope
 
-- capture the actual changeset, not only plain `git diff`
+- capture the actual changeset from the active source, not only plain `git diff`
 - review tracked changes, staged changes, and any untracked files that are part of the task
 - plain `git diff` alone is not sufficient when the work includes new untracked files
 - if a new file is part of the work, either read it directly during review or stage it before the final whole-diff review pass
-- review only changed lines and their immediate calling context
+- review the changed lines first, then read as far beyond the immediate calling context as needed to complete the mandatory traces and contract checks correctly
 - do not pad the review with unrelated unchanged code
 
 ## Mandatory Trace Activities
@@ -65,7 +66,7 @@ If a trace activity does not apply to the current diff (e.g., no external calls,
 
 ## Review Loop
 
-Repeat this loop:
+For implementation tasks, repeat this loop:
 
 1. capture the current diff
 2. read every changed hunk
@@ -79,7 +80,9 @@ Repeat this loop:
 
 Steps 3, 4, and 5 are not optional. A review pass that skips any of these is not a valid review pass and does not count toward the zero-findings exit condition.
 
-Exit only when actionable findings are zero, unless a true safety gate or external blocker appears.
+For review-only tasks, run the same trace, checklist, and adversarial process, but stop after producing the findings report. Do not patch as part of the loop unless the user explicitly switches the task to fixing mode.
+
+For implementation tasks, exit only when actionable findings are zero, unless a true safety gate or external blocker appears.
 
 Completion is stricter than "I patched the last finding":
 
@@ -90,17 +93,25 @@ Completion is stricter than "I patched the last finding":
 
 If the same finding repeats for 2 consecutive rounds and you cannot resolve the disagreement with evidence, treat it as a judgment conflict and escalate to the user.
 
-Treat findings as internal work items:
+For implementation tasks, treat findings as internal work items:
 
 - patch them immediately when they are in scope and fixable now
 - do not stop to ask the user what to do with normal review findings
 - do not present a findings list mid-task unless the user explicitly asked for a review-only outcome
 
+For review-only tasks:
+
+- do not patch findings during the review stage
+- do not convert the review into implementation on your own
+- return the findings as the deliverable
+
 ## Required Procedure
 
 For every review pass:
 
-1. Capture the full changeset: `git diff`, `git diff --cached`, and any untracked task files via `git ls-files --others --exclude-standard`
+1. Capture the full changeset from the active source:
+   - local implementation work: `git diff`, `git diff --cached`, and any untracked task files via `git ls-files --others --exclude-standard`
+   - review-only branch/commit/PR work: capture the equivalent patch, file list, or changed-file content from that artifact
 2. Read every changed line carefully
 3. For each changed block, answer:
    - what are the possible inputs?
@@ -131,7 +142,8 @@ For each item, identify the relevant changed code and state what you checked:
 - performance or resource blowups — can this path be called in an unbounded loop or without rate limiting?
 - security and sensitive-data exposure — are secrets, PII, or internal details leaked in logs, responses, or error messages?
 - test coverage for the most plausible failure mode — is there a test for the first thing that would break?
-- actual alignment with the current spec — does the implementation match what was specified, not just "work"?
+- actual alignment with the current spec — for implementation tasks, does the implementation match what was specified, not just "work"?
+- actual alignment with the requested review target — for review-only tasks with no spec, does the finding reflect the stated scope and artifact under review?
 - operability and debuggability — can you diagnose a production failure from logs alone?
 - partial failure behavior — if this operation half-succeeds, what state is left behind?
 - dead code and unused parameters — are there parameters validated but never sent, or code paths that can never execute?
@@ -153,7 +165,7 @@ Do not answer these questions in your head. Write out each answer as part of the
 
 ## User Communication Rule
 
-Default behavior:
+Default behavior for implementation tasks:
 
 - keep review findings inside the execution loop
 - patch and re-review instead of surfacing the issue list
@@ -181,6 +193,7 @@ Use a deployment-blocker mindset:
 - do not stop after finding only surface issues
 - if the review felt easier than the implementation, review again more deeply
 - review as if the user will immediately ask for a separate code review after completion
+- for implementation work, review until that later code review should not find any new in-scope issue
 
 ## Common Review Failures
 
