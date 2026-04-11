@@ -48,6 +48,7 @@ These are not sufficient:
 - subagent success reports without independent confirmation
 - linter success as a substitute for a build or runtime check
 - a focused test when the claim is about the whole feature
+- passing tests without a fresh final review pass
 
 ## Completion Claims
 
@@ -79,6 +80,7 @@ Before final completion of an implementation task, re-read the current spec and 
 - every critical behavior has a proving check
 - any remaining gap is explicitly called out and is genuinely non-blocking
 - the last review pass happened after the last code patch and still found zero actionable findings
+- the work was not closed merely because tests turned green again
 
 ## Final Summary
 
@@ -111,6 +113,7 @@ Prefer concrete review stats when available:
 - number of review loops
 - number of findings patched
 - final actionable findings count
+- whether a fresh final review pass was run after the last patch
 
 ## Delegation Rule
 
@@ -127,6 +130,8 @@ Before the final handoff for an implementation task:
 5. run the strongest relevant verification
 6. confirm the diff matches the claimed result
 7. only then write the completion summary
+
+If step 4 is missing, do not claim the task is complete even if tests or builds are green.
 
 ## Review-Only Final Check
 

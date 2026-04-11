@@ -95,6 +95,8 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - For implementation tasks, do not call the work complete until the internal review loop has already absorbed and patched all in-scope actionable findings.
 - Do not call the task complete until a fresh final review pass after the last patch also returns zero actionable findings.
 - If a subsequent "code review" request on the same finished diff would find real in-scope issues, the original review loop failed. The review must be thorough enough that a second independent review should not uncover anything new.
+- Do not treat passing tests, a green build, or a reproduced fix as a substitute for the final review loop. Verification does not replace review.
+- If you cannot point to fresh final review evidence for the current diff, the task is not complete yet.
 - Never claim completion without fresh verification evidence.
 - Do not do speculative refactoring or unrelated cleanup.
 - Do not commit, push, or publish unless the user explicitly asks.

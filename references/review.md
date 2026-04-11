@@ -90,6 +90,7 @@ Completion is stricter than "I patched the last finding":
 - the fresh pass must also walk through every checklist item and adversarial question
 - only if that fresh pass also returns zero actionable findings may the task move to final verification and completion
 - if a later "code review" request on the same finished diff would obviously find an issue, the task was not actually complete
+- a green test run or successful repro does not waive this fresh final pass
 
 If the same finding repeats for 2 consecutive rounds and you cannot resolve the disagreement with evidence, treat it as a judgment conflict and escalate to the user.
 
@@ -194,6 +195,7 @@ Use a deployment-blocker mindset:
 - if the review felt easier than the implementation, review again more deeply
 - review as if the user will immediately ask for a separate code review after completion
 - for implementation work, review until that later code review should not find any new in-scope issue
+- do not let "tests pass now" create completion momentum that skips the final review pass
 
 ## Common Review Failures
 
