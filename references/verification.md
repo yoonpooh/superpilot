@@ -82,14 +82,35 @@ Before final completion, re-read the current spec and plan and confirm:
 
 ## Final Summary
 
+The completion summary should be easy to scan in 5-10 seconds.
+
+Use this shape by default:
+
+```md
+## 완료 요약
+- 변경: 무엇을 바꿨는지 한 줄
+- 이유: 왜 바꿨는지 한 줄
+- 검증: 실행한 핵심 검증과 결과
+- 리뷰: review loop N회, findings X건 패치, 최종 0건
+- 범위: 핵심 파일/영향 범위
+- 참고: 남은 비차단 갭이 있을 때만
+```
+
 The completion summary should cover:
 
 - what changed
 - why it changed
 - what was verified
+- how the review loop ended
 - any remaining non-blocking gap
 
 Do not report success first and evidence second. Evidence must come first.
+
+Prefer concrete review stats when available:
+
+- number of review loops
+- number of findings patched
+- final actionable findings count
 
 ## Delegation Rule
 
