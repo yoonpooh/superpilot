@@ -88,7 +88,8 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - Use subagents only when task independence is clear and write scopes do not overlap.
 - Final integration, final review, and final verification always belong to the main agent.
 - Review the diff, not the untouched codebase, and keep looping until actionable findings reach zero.
-- Every review pass must walk through every checklist item and every adversarial question against the diff. A review pass that skips the checklist or hand-waves the adversarial questions is not a valid pass and does not count toward the zero-findings exit condition.
+- Every review pass must run mandatory trace activities, walk through every checklist item, and answer every adversarial question against the diff. A review pass that skips any of these is not a valid pass and does not count toward the zero-findings exit condition.
+- Mandatory trace activities require tracing actual code paths (failure paths, state consistency, access control, input boundaries), not checking boxes. If the diff has an external API call, trace what happens when it fails. If the diff has a new endpoint, compare its access control to existing endpoints. If the diff updates state in two places, trace what happens when one update fails.
 - Treat review findings as internal work items unless the user explicitly asks for a review-only report.
 - Do not call the task complete until a fresh final review pass after the last patch also returns zero actionable findings.
 - If a subsequent "code review" request on the same diff would find real issues, the original review loop failed. The review must be thorough enough that a second independent review finds nothing new.

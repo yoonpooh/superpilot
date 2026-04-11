@@ -20,20 +20,61 @@ If the task itself is review-only, this stage becomes the primary deliverable:
 - review only changed lines and their immediate calling context
 - do not pad the review with unrelated unchanged code
 
+## Mandatory Trace Activities
+
+These are not checklist items to glance at. They are concrete activities that require reading and following actual code paths in the diff. Do all that apply.
+
+### 1. Failure path trace
+
+For every external call, network request, or operation that can fail in the diff:
+
+- identify every failure branch (exception, error response, timeout, empty result)
+- trace each failure from the point of origin through to what the user sees
+- verify that UI state, session state, and persisted state all stay consistent on failure
+- if the failure is swallowed or only partially handled, that is a finding
+
+### 2. State consistency trace
+
+For every place the diff updates state in two or more locations (e.g., DOM and server, client array and session, cache and database):
+
+- trace what happens when the operation succeeds
+- trace what happens when the operation fails partway through
+- verify that the two states cannot diverge
+- if they can diverge, that is a finding
+
+### 3. Access and cost trace
+
+For every new route, endpoint, or entry point in the diff:
+
+- compare its access control (auth, permissions, roles) against the existing project pattern
+- if it calls a paid external API or resource-heavy operation, verify that rate limiting or throttle exists
+- if the new endpoint has weaker protection than similar existing endpoints, that is a finding
+
+### 4. Input boundary trace
+
+For every user input that reaches the diff:
+
+- trace what happens with empty, whitespace-only, maximum-length, and malformed input
+- verify that validation catches these before they reach expensive operations
+- if invalid input can trigger an external API call or corrupt state, that is a finding
+
+If a trace activity does not apply to the current diff (e.g., no external calls, no new endpoints), skip it and state why it does not apply.
+
 ## Review Loop
 
 Repeat this loop:
 
 1. capture the current diff
 2. read every changed hunk
-3. walk through every checklist item against every changed block — record what you checked and what you found per item
-4. answer every adversarial question — record each answer
-5. collect actionable findings
-6. patch them
-7. regenerate the diff
-8. review again from step 1
+3. run mandatory trace activities (see below) — these are concrete code-path traces, not checkbox items
+4. walk through every checklist item against every changed block — record what you checked and what you found per item
+5. answer every adversarial question — record each answer
+6. collect actionable findings
+7. patch them
+8. regenerate the diff
+9. review again from step 1
 
-Steps 3 and 4 are not optional. A review pass that skips the checklist or adversarial questions is not a valid review pass and does not count toward the zero-findings exit condition.
+Steps 3, 4, and 5 are not optional. A review pass that skips any of these is not a valid review pass and does not count toward the zero-findings exit condition.
 
 Exit only when actionable findings are zero, unless a true safety gate or external blocker appears.
 
