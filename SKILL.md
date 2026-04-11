@@ -1,6 +1,6 @@
 ---
 name: superpilot
-description: "Use when handling non-trivial work in an existing repository and the agent should move from collaborative design into autonomous implementation with spec, plan, TDD, optional subagents, harsh diff review, and evidence-based verification."
+description: "Use when handling non-trivial work in an existing repository, or when performing a review-only audit of an existing diff, branch, commit, or pull request."
 ---
 
 # Superpilot
@@ -15,6 +15,44 @@ This skill is self-contained:
 - do not scan for other workflow skills before each stage
 - use runtime tools, shell commands, git, and subagents directly when needed
 - do not commit, push, or open PRs unless the user explicitly asks
+
+## When to Use
+
+Use `superpilot` when working in an existing repository and the task needs disciplined execution, such as:
+
+- bug fixes
+- feature work
+- refactoring tied to a real request
+- config, CI, or workflow changes
+- test additions or test repair
+- review-only audits of an existing diff, branch, commit, or pull request
+
+```dot
+digraph superpilot_when {
+    "Existing repository task?" [shape=diamond];
+    "Review-only request on existing diff/branch/commit/PR?" [shape=diamond];
+    "Non-trivial implementation or bugfix?" [shape=diamond];
+    "Use superpilot\n(review-only mode)" [shape=box];
+    "Use superpilot\n(full workflow)" [shape=box];
+    "Do not use superpilot" [shape=box];
+
+    "Existing repository task?" -> "Review-only request on existing diff/branch/commit/PR?" [label="yes"];
+    "Existing repository task?" -> "Do not use superpilot" [label="no"];
+    "Review-only request on existing diff/branch/commit/PR?" -> "Use superpilot\n(review-only mode)" [label="yes"];
+    "Review-only request on existing diff/branch/commit/PR?" -> "Non-trivial implementation or bugfix?" [label="no"];
+    "Non-trivial implementation or bugfix?" -> "Use superpilot\n(full workflow)" [label="yes"];
+    "Non-trivial implementation or bugfix?" -> "Do not use superpilot" [label="no"];
+}
+```
+
+## When Not to Use
+
+Do not use `superpilot` for:
+
+- greenfield project creation
+- simple factual questions or code explanation with no change requested
+- release or deployment orchestration by default
+- commit or PR workflow by default
 
 ## Workflow
 
@@ -41,7 +79,7 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 
 ## Hard Rules
 
-- Treat `AGENTS.md` in the active repository as a strong local rule set.
+- Treat repository-local agent instruction files such as `AGENTS.md` and `CLAUDE.md` as strong local rule sets.
 - For non-trivial work, always produce both a spec and a plan.
 - Review-only requests are an explicit exception to the spec-and-plan rule.
 - When the task involves a bug, test failure, build failure, or unexpected behavior, investigate root cause before proposing fixes.
@@ -51,6 +89,7 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - Final integration, final review, and final verification always belong to the main agent.
 - Review the diff, not the untouched codebase, and keep looping until actionable findings reach zero.
 - Treat review findings as internal work items unless the user explicitly asks for a review-only report.
+- Do not call the task complete until a fresh final review pass after the last patch also returns zero actionable findings.
 - Never claim completion without fresh verification evidence.
 - Do not do speculative refactoring or unrelated cleanup.
 - Do not commit, push, or publish unless the user explicitly asks.

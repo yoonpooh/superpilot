@@ -78,6 +78,7 @@ Before final completion, re-read the current spec and plan and confirm:
 - every in-scope requirement is implemented
 - every critical behavior has a proving check
 - any remaining gap is explicitly called out and is genuinely non-blocking
+- the last review pass happened after the last code patch and still found zero actionable findings
 
 ## Final Summary
 
@@ -100,6 +101,8 @@ Before the final handoff:
 
 1. re-check the current spec
 2. re-check the plan
-3. run the strongest relevant verification
-4. confirm the diff matches the claimed result
-5. only then write the completion summary
+3. confirm the review loop reached zero findings
+4. confirm a fresh final review pass after the last patch also reached zero findings
+5. run the strongest relevant verification
+6. confirm the diff matches the claimed result
+7. only then write the completion summary

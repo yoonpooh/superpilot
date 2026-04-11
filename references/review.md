@@ -33,6 +33,12 @@ Repeat this loop:
 
 Exit only when actionable findings are zero, unless a true safety gate or external blocker appears.
 
+Completion is stricter than "I patched the last finding":
+
+- after the final patch, run at least one fresh whole-diff review pass with no new code changes in between
+- only if that fresh pass also returns zero actionable findings may the task move to final verification and completion
+- if a later "code review" request on the same finished diff would obviously find an issue, the task was not actually complete
+
 If the same finding repeats for 2 consecutive rounds and you cannot resolve the disagreement with evidence, treat it as a judgment conflict and escalate to the user.
 
 Treat findings as internal work items:
@@ -115,6 +121,7 @@ Use a deployment-blocker mindset:
 - do not confuse familiarity with correctness
 - do not stop after finding only surface issues
 - if the review felt easier than the implementation, review again more deeply
+- review as if the user will immediately ask for a separate code review after completion
 
 ## Common Review Failures
 
@@ -142,3 +149,8 @@ If the issue is in scope and fixable now, fix it now.
 ## Final Responsibility
 
 Subagents may perform first-pass reviews for isolated slices, but the main agent must perform the final whole-diff review before completion.
+
+The main agent must satisfy both of these before completion:
+
+1. the review-and-patch loop reached zero actionable findings
+2. a fresh final whole-diff review pass after the last patch also reached zero actionable findings

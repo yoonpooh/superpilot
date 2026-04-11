@@ -4,6 +4,8 @@
 
 Use this stage to turn an initial request into a clear design and written spec before planning or implementation starts.
 
+Skip this stage only when the task is truly trivial under the exception defined in `SKILL.md`.
+
 For non-trivial work:
 
 - explore context first
@@ -18,7 +20,7 @@ Do not implement before the spec/design is clear enough to write down concretely
 Before asking detailed questions:
 
 - resolve the repository root
-- read repo-root `AGENTS.md` if present
+- read repo-root agent instruction files such as `AGENTS.md` and `CLAUDE.md` if present
 - inspect the relevant files, docs, and recent changes
 - identify whether the request is narrowly scoped or crosses multiple subsystems
 
