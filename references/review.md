@@ -8,6 +8,12 @@ Review the diff until actionable findings reach zero.
 
 By default, review is an internal quality gate, not a user-facing report.
 
+If the task itself is review-only, this stage becomes the primary deliverable:
+
+- inspect the diff with the same harsh standard
+- return findings ordered by severity
+- do not patch unless the user explicitly asks for fixes
+
 ## Review Scope
 
 - run `git diff` on the actual changeset
@@ -94,6 +100,12 @@ Expose findings to the user only when one of these is true:
 - a true safety gate was triggered
 - an external blocker prevents fixing the finding now
 - the same judgment conflict repeats and cannot be resolved with evidence
+
+For review-only requests:
+
+- do not convert the task into implementation work on your own
+- do not write a spec or plan unless the user later asks for fixes
+- present findings first, then brief residual risks or testing gaps
 
 ## Review Mindset
 

@@ -19,14 +19,17 @@
 
 1. 저장소 맥락 탐색
 2. 필요한 범위만 명확화
-3. spec 작성
-4. plan 작성
-5. 자율 실행
-6. diff 기반 강한 리뷰
-7. 증거 기반 검증
-8. 완료 보고
+3. 설계 협업
+4. spec 작성
+5. plan 작성
+6. 자율 실행
+7. diff 기반 강한 리뷰
+8. 증거 기반 검증
+9. 완료 보고
 
 요청이 올바른 spec으로 정리될 정도로 충분히 명확해지면, 원래 사용자 요청 자체를 실행 승인으로 간주합니다. 중간에 멈추는 경우는 파괴적 작업, 자격 증명 부족, 모순된 요구사항 같은 실제 safety gate뿐입니다.
+
+단, 사용자가 기존 diff나 브랜치에 대한 리뷰만 명시적으로 요청한 경우에는 다르게 동작합니다. 이때는 수정까지 자동으로 진행하지 않고, findings만 반환합니다.
 
 ## 저장소 구조
 
@@ -49,8 +52,8 @@ superpilot/
 ### 공용 스킬 소스
 
 ```bash
-mkdir -p ~/.agents/skills
-cp -R ./superpilot ~/.agents/skills/superpilot
+mkdir -p ~/.agents/skills/superpilot
+rsync -a ./ ~/.agents/skills/superpilot/
 ```
 
 ### Claude Code
@@ -80,6 +83,7 @@ cp -R ~/.agents/skills/superpilot ~/.codex/skills/superpilot
 
 - 기존 저장소에서 비사소한 작업은 `superpilot` 스킬을 먼저 사용한다.
 - spec, plan, TDD, 리뷰, 검증 흐름은 `superpilot`을 단일 기준으로 삼는다.
+- 올바른 spec을 쓸 수 있을 만큼 명확해지면, 원래 사용자 요청을 실행 승인으로 간주한다.
 ```
 
 ## 적용 범위
@@ -91,6 +95,7 @@ cp -R ~/.agents/skills/superpilot ~/.codex/skills/superpilot
 - 실제 요구사항과 연결된 리팩터링
 - 설정 변경
 - 기존 저장소 안의 워크플로우/스킬 변경
+- 기존 diff, 브랜치, 커밋, PR에 대한 review-only 점검
 
 `superpilot`이 기본 대상으로 삼지 않는 작업:
 

@@ -1,6 +1,6 @@
 ---
 name: superpilot
-description: "Use when handling non-trivial work in an existing repository and Codex should move from collaborative design into autonomous implementation with spec, plan, TDD, optional subagents, harsh diff review, and evidence-based verification."
+description: "Use when handling non-trivial work in an existing repository and the agent should move from collaborative design into autonomous implementation with spec, plan, TDD, optional subagents, harsh diff review, and evidence-based verification."
 ---
 
 # Superpilot
@@ -33,10 +33,17 @@ For non-trivial work, follow this path:
 
 Once the request is clear enough to produce a correct spec, treat the original user request as authorization to continue through planning and implementation. Do not introduce approval gates unless a safety gate triggers.
 
+If the user explicitly asks for review-only output on an existing diff, branch, commit, or pull request, switch to review-only mode:
+
+- skip spec, plan, and implementation
+- inspect the diff and return findings only
+- do not patch unless the user explicitly asks for fixes
+
 ## Hard Rules
 
 - Treat `AGENTS.md` in the active repository as a strong local rule set.
 - For non-trivial work, always produce both a spec and a plan.
+- Review-only requests are an explicit exception to the spec-and-plan rule.
 - When the task involves a bug, test failure, build failure, or unexpected behavior, investigate root cause before proposing fixes.
 - Use TDD for feature work, bug fixes, refactoring, and behavior changes when there is a real executable test surface.
 - Choose the execution strategy yourself. Do not ask the user to choose direct execution vs subagent execution.
