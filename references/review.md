@@ -26,16 +26,21 @@ Repeat this loop:
 
 1. capture the current diff
 2. read every changed hunk
-3. identify actionable findings
-4. patch them
-5. regenerate the diff
-6. review again
+3. walk through every checklist item against every changed block — record what you checked and what you found per item
+4. answer every adversarial question — record each answer
+5. collect actionable findings
+6. patch them
+7. regenerate the diff
+8. review again from step 1
+
+Steps 3 and 4 are not optional. A review pass that skips the checklist or adversarial questions is not a valid review pass and does not count toward the zero-findings exit condition.
 
 Exit only when actionable findings are zero, unless a true safety gate or external blocker appears.
 
 Completion is stricter than "I patched the last finding":
 
 - after the final patch, run at least one fresh whole-diff review pass with no new code changes in between
+- the fresh pass must also walk through every checklist item and adversarial question
 - only if that fresh pass also returns zero actionable findings may the task move to final verification and completion
 - if a later "code review" request on the same finished diff would obviously find an issue, the task was not actually complete
 
@@ -59,38 +64,46 @@ For every review pass:
    - what can fail here?
    - does the caller still match the contract?
    - is this consistent with nearby code patterns?
-4. Apply the checklist below
-5. Ask the adversarial questions below
+4. Walk through every checklist item below against the diff — do not skip items, do not batch them as "all fine"
+5. Answer every adversarial question below — write out each answer, even when the answer is "no issue"
 6. Record findings with exact file references from the diff or changed files so they can be patched precisely
+
+If steps 4 or 5 produced no findings at all, re-read the diff one more time with the assumption that you missed something. A non-trivial change that triggers zero checklist findings on the first pass is almost always under-reviewed, not perfect.
 
 ## Checklist
 
-Check each category explicitly against the diff:
+Check each category explicitly against the diff. Do not skip items. Do not collapse multiple items into "all clear."
 
-- input validation
-- error and exception handling
-- return-value and caller compatibility
-- regression risk to existing callers
-- concurrency and ordering assumptions
-- data and state consistency
-- performance or resource blowups
-- security and sensitive-data exposure
-- test coverage for the most plausible failure mode
-- actual alignment with the current spec
-- operability and debuggability
-- partial failure behavior
+For each item, identify the relevant changed code and state what you checked:
+
+- input validation — can invalid, empty, or boundary inputs reach this path?
+- error and exception handling — what happens on every failure branch? is the failure surfaced, swallowed, or leaked?
+- return-value and caller compatibility — do all callers still match the new contract?
+- regression risk to existing callers — could an existing consumer break from this change?
+- concurrency and ordering assumptions — are there race conditions, duplicate submissions, or ordering dependencies?
+- data and state consistency — can client-side and server-side state diverge? (e.g., optimistic UI without rollback)
+- performance or resource blowups — can this path be called in an unbounded loop or without rate limiting?
+- security and sensitive-data exposure — are secrets, PII, or internal details leaked in logs, responses, or error messages?
+- test coverage for the most plausible failure mode — is there a test for the first thing that would break?
+- actual alignment with the current spec — does the implementation match what was specified, not just "work"?
+- operability and debuggability — can you diagnose a production failure from logs alone?
+- partial failure behavior — if this operation half-succeeds, what state is left behind?
+- dead code and unused parameters — are there parameters validated but never sent, or code paths that can never execute?
 
 ## Adversarial Questions
 
-Before calling the review complete, answer all of these:
+Before calling the review complete, answer all of these explicitly — write out each answer:
 
 - If this ships as-is, what is most likely to break first?
 - What incorrect assumption does this change make about inputs, ordering, state, or third-party behavior?
 - What test would fail immediately if the implementation were subtly wrong in the most plausible way?
 - If malicious or malformed input reaches this path, what happens?
 - What would a strong reviewer challenge in this diff?
+- What would a user encounter on the first error or edge-case path?
 
 If any answer produces a credible problem, that is a finding.
+
+Do not answer these questions in your head. Write out each answer as part of the review work. A one-word "nothing" for every question is a red flag that the review was too shallow.
 
 ## User Communication Rule
 
@@ -133,6 +146,23 @@ These are not acceptable:
 - stopping after style issues while ignoring correctness risk
 - saying “0 findings” after only one shallow pass
 - trusting subagent or earlier review output without re-reading the final diff
+- collapsing the entire checklist into “checked, all clear” without per-item evidence
+- answering adversarial questions with “nothing” or “no issues” for every item
+- reviewing your own code with less rigor because you wrote it and “know” it works
+
+## Zero-Findings Gate
+
+Before declaring zero actionable findings on any review pass, confirm all of these:
+
+1. every checklist item was explicitly checked against the diff — not batched, not skipped
+2. every adversarial question was answered with a written response
+3. error and failure paths were traced, not just the happy path
+4. client-side and server-side state consistency was verified for stateful interactions
+5. you did not review your own implementation with author bias — review as if someone else wrote it
+
+If you cannot confirm all five, the review pass is incomplete. Go back and finish it.
+
+A non-trivial diff where the first review pass finds zero findings is almost certainly under-reviewed. When this happens, re-read the diff with a different lens: trace an error path end-to-end, trace a malicious input end-to-end, or trace a state mutation end-to-end. If the second reading still finds nothing, the zero is credible.
 
 ## Severity
 
