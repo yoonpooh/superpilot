@@ -6,6 +6,8 @@ Review should be stricter than implementation. The goal is to prove the change i
 
 Review the diff until actionable findings reach zero.
 
+By default, review is an internal quality gate, not a user-facing report.
+
 ## Review Scope
 
 - run `git diff` on the actual changeset
@@ -27,6 +29,12 @@ Exit only when actionable findings are zero, unless a true safety gate or extern
 
 If the same finding repeats for 2 consecutive rounds and you cannot resolve the disagreement with evidence, treat it as a judgment conflict and escalate to the user.
 
+Treat findings as internal work items:
+
+- patch them immediately when they are in scope and fixable now
+- do not stop to ask the user what to do with normal review findings
+- do not present a findings list mid-task unless the user explicitly asked for a review-only outcome
+
 ## Required Procedure
 
 For every review pass:
@@ -41,7 +49,7 @@ For every review pass:
    - is this consistent with nearby code patterns?
 4. Apply the checklist below
 5. Ask the adversarial questions below
-6. Report findings with exact file references from the diff or changed files
+6. Record findings with exact file references from the diff or changed files so they can be patched precisely
 
 ## Checklist
 
@@ -72,6 +80,21 @@ Before calling the review complete, answer all of these:
 
 If any answer produces a credible problem, that is a finding.
 
+## User Communication Rule
+
+Default behavior:
+
+- keep review findings inside the execution loop
+- patch and re-review instead of surfacing the issue list
+- mention review only in the final completion summary, for example by stating how many review loops were completed and that actionable findings reached zero
+
+Expose findings to the user only when one of these is true:
+
+- the user explicitly asked for review-only output
+- a true safety gate was triggered
+- an external blocker prevents fixing the finding now
+- the same judgment conflict repeats and cannot be resolved with evidence
+
 ## Review Mindset
 
 Use a deployment-blocker mindset:
@@ -86,6 +109,7 @@ Use a deployment-blocker mindset:
 These are not acceptable:
 
 - skimming instead of reading every changed hunk
+- dumping findings to the user instead of fixing them during the loop
 - reporting “looks fine” without checking contracts and callers
 - stopping after style issues while ignoring correctness risk
 - saying “0 findings” after only one shallow pass

@@ -43,6 +43,7 @@ Once the request is clear enough to produce a correct spec, treat the original u
 - Use subagents only when task independence is clear and write scopes do not overlap.
 - Final integration, final review, and final verification always belong to the main agent.
 - Review the diff, not the untouched codebase, and keep looping until actionable findings reach zero.
+- Treat review findings as internal work items unless the user explicitly asks for a review-only report.
 - Never claim completion without fresh verification evidence.
 - Do not do speculative refactoring or unrelated cleanup.
 - Do not commit, push, or publish unless the user explicitly asks.
