@@ -16,7 +16,10 @@ If the task itself is review-only, this stage becomes the primary deliverable:
 
 ## Review Scope
 
-- run `git diff` on the actual changeset
+- capture the actual changeset, not only plain `git diff`
+- review tracked changes, staged changes, and any untracked files that are part of the task
+- plain `git diff` alone is not sufficient when the work includes new untracked files
+- if a new file is part of the work, either read it directly during review or stage it before the final whole-diff review pass
 - review only changed lines and their immediate calling context
 - do not pad the review with unrelated unchanged code
 
@@ -97,7 +100,7 @@ Treat findings as internal work items:
 
 For every review pass:
 
-1. Run `git diff`
+1. Capture the full changeset: `git diff`, `git diff --cached`, and any untracked task files via `git ls-files --others --exclude-standard`
 2. Read every changed line carefully
 3. For each changed block, answer:
    - what are the possible inputs?
@@ -110,6 +113,8 @@ For every review pass:
 6. Record findings with exact file references from the diff or changed files so they can be patched precisely
 
 If steps 4 or 5 produced no findings at all, re-read the diff one more time with the assumption that you missed something. A non-trivial change that triggers zero checklist findings on the first pass is almost always under-reviewed, not perfect.
+
+If untracked files are part of the task, the review is incomplete until those files have also been read in full or staged so they appear in the final whole-diff pass.
 
 ## Checklist
 
