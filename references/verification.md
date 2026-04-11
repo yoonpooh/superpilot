@@ -81,6 +81,7 @@ Before final completion of an implementation task, re-read the current spec and 
 - any remaining gap is explicitly called out and is genuinely non-blocking
 - the last review pass happened after the last code patch and still found zero actionable findings
 - the work was not closed merely because tests turned green again
+- state transitions, failure corrections, and boundary restores were checked where the diff changes visible or persisted state
 
 ## Final Summary
 
@@ -114,6 +115,7 @@ Prefer concrete review stats when available:
 - number of findings patched
 - final actionable findings count
 - whether a fresh final review pass was run after the last patch
+- whether state-consistency and failure-correction traces were explicitly checked when applicable
 
 ## Delegation Rule
 

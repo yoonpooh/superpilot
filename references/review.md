@@ -34,7 +34,8 @@ For every external call, network request, or operation that can fail in the diff
 
 - identify every failure branch (exception, error response, timeout, empty result)
 - trace each failure from the point of origin through to what the user sees
-- verify that UI state, session state, and persisted state all stay consistent on failure
+- verify that user-visible state, session state, and persisted state all stay consistent on failure
+- if the diff creates any user-visible artifact before success is confirmed, verify there is an explicit failure-state or correction path
 - if the failure is swallowed or only partially handled, that is a finding
 
 ### 2. State consistency trace
@@ -44,6 +45,8 @@ For every place the diff updates state in two or more locations (e.g., DOM and s
 - trace what happens when the operation succeeds
 - trace what happens when the operation fails partway through
 - verify that the two states cannot diverge
+- if the diff uses an optimistic state transition, verify rollback, reconciliation, or explicit failed state exists
+- if repeated retries or duplicate triggers could create duplicate user-visible results or duplicate persisted state, that is a finding
 - if they can diverge, that is a finding
 
 ### 3. Access and cost trace
@@ -139,7 +142,7 @@ For each item, identify the relevant changed code and state what you checked:
 - return-value and caller compatibility — do all callers still match the new contract?
 - regression risk to existing callers — could an existing consumer break from this change?
 - concurrency and ordering assumptions — are there race conditions, duplicate submissions, or ordering dependencies?
-- data and state consistency — can client-side and server-side state diverge? (e.g., optimistic UI without rollback)
+- data and state consistency — can local state, remote state, and user-visible state diverge? if optimistic updates exist, is there rollback, reconciliation, or explicit failed state?
 - performance or resource blowups — can this path be called in an unbounded loop or without rate limiting?
 - security and sensitive-data exposure — are secrets, PII, or internal details leaked in logs, responses, or error messages?
 - test coverage for the most plausible failure mode — is there a test for the first thing that would break?
@@ -155,6 +158,7 @@ Before calling the review complete, answer all of these explicitly — write out
 
 - If this ships as-is, what is most likely to break first?
 - What incorrect assumption does this change make about inputs, ordering, state, or third-party behavior?
+- If this change updates visible state before durable success, what corrects it on failure or retry?
 - What test would fail immediately if the implementation were subtly wrong in the most plausible way?
 - If malicious or malformed input reaches this path, what happens?
 - What would a strong reviewer challenge in this diff?

@@ -44,6 +44,7 @@ The original user request is treated as authorization to continue once the spec 
 - **Harsh review** — review the diff, not the codebase; for implementation work, absorb and patch findings inside the loop until zero actionable findings remain
 - **Evidence over confidence** — verification must produce observable proof, not assertions
 - **Review before completion** — passing tests does not replace the fresh final review pass
+- **State trace discipline** — when changes affect visible or persisted state, review must trace divergence, correction, and boundary behavior explicitly
 - **Minimal clarification** — ask only when the answer prevents building the wrong thing
 - **Scope discipline** — no speculative refactoring, no unrelated cleanup
 
