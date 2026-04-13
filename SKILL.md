@@ -61,13 +61,15 @@ For non-trivial work, follow this path:
 1. Explore repository context and local guardrails
 2. Clarify only what is materially ambiguous
 3. Collaborate with the user on the design
-4. Write a spec
-5. Write a plan
-6. Investigate root cause first when debugging is needed
-7. Execute autonomously
-8. Run harsh review-and-patch loops on the diff
-9. Verify with fresh evidence
+4. Write a spec — load [references/spec.md](references/spec.md) first
+5. Write a plan — load [references/plan.md](references/plan.md) first
+6. Investigate root cause first when debugging is needed — load [references/debugging.md](references/debugging.md) first
+7. Load [references/implementation.md](references/implementation.md), then execute autonomously following its TDD and execution rules
+8. Run harsh review-and-patch loops on the diff — load [references/review.md](references/review.md) first
+9. Verify with fresh evidence — load [references/verification.md](references/verification.md) first
 10. Deliver a completion summary
+
+Each stage must Read the linked reference file before starting work. Skipping a reference load is not allowed — the reference defines how to execute the stage, not just what the stage is about.
 
 Once the request is clear enough to produce a correct spec, treat the original user request as authorization to continue through planning and implementation. Do not introduce approval gates unless a safety gate triggers.
 
