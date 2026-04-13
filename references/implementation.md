@@ -136,6 +136,19 @@ Stop and correct course if you catch yourself thinking:
 - “this is too simple to test”
 - “let me just fix it quickly without reproducing”
 - “the subagent said it is done, that is probably enough”
+- “tests are green, so the task is done — I can skip review”
 - “while I am here, I should clean up these unrelated files too”
 
 These are shortcut patterns that reduce trust.
+
+## Stage Exit Gate
+
+GREEN does not mean done. GREEN means the implementation is ready for review.
+
+After all implementation slices are complete and green:
+
+1. stop writing production code
+2. proceed to the Review stage — load [review.md](review.md) and run the full review loop
+3. do not write a completion summary, do not claim the task is done, do not move to verification
+
+No path from this stage leads to completion without passing through the Review stage first. If you find yourself about to report results to the user after GREEN without having loaded and executed review.md, you are skipping a mandatory stage.

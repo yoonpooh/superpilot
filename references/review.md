@@ -77,9 +77,10 @@ For implementation tasks, repeat this loop:
 4. walk through every checklist item against every changed block — record what you checked and what you found per item
 5. answer every adversarial question — record each answer
 6. collect actionable findings
-7. patch them
-8. regenerate the diff
-9. review again from step 1
+7. if findings > 0: patch them, then go back to step 1 — **do not exit here**
+8. if findings = 0: this pass is a candidate for exit — check the exit condition below
+
+**The exit point is step 8, never step 7.** Patching a finding changes the diff. A changed diff is an unreviewed diff. You must return to step 1 and review the new diff that includes your patches. The patch itself can introduce new problems (e.g., a try-catch that swallows an exception needed for transaction rollback). Only when a full review pass on the post-patch diff produces zero findings may you exit.
 
 Steps 3, 4, and 5 are not optional. A review pass that skips any of these is not a valid review pass and does not count toward the zero-findings exit condition.
 
@@ -90,10 +91,11 @@ For implementation tasks, exit only when actionable findings are zero, unless a 
 Completion is stricter than "I patched the last finding":
 
 - after the final patch, run at least one fresh whole-diff review pass with no new code changes in between
-- the fresh pass must also walk through every checklist item and adversarial question
+- the fresh pass must re-capture the diff, re-run traces, walk through every checklist item, and answer every adversarial question against the post-patch diff
 - only if that fresh pass also returns zero actionable findings may the task move to final verification and completion
 - if a later "code review" request on the same finished diff would obviously find an issue, the task was not actually complete
 - a green test run or successful repro does not waive this fresh final pass
+- if you patched N findings, you owe at least N+1 review passes total (N passes that found issues + 1 clean pass)
 
 If the same finding repeats for 2 consecutive rounds and you cannot resolve the disagreement with evidence, treat it as a judgment conflict and escalate to the user.
 
@@ -214,6 +216,8 @@ These are not acceptable:
 - collapsing the entire checklist into “checked, all clear” without per-item evidence
 - answering adversarial questions with “nothing” or “no issues” for every item
 - reviewing your own code with less rigor because you wrote it and “know” it works
+- patching a finding and moving to completion or verification without re-reviewing the patched diff
+- treating “I fixed the issue” as equivalent to “the fix is verified” — the patch itself can introduce new problems
 
 ## Zero-Findings Gate
 

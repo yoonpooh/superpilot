@@ -65,9 +65,10 @@ For non-trivial work, follow this path:
 5. Write a plan — load [references/plan.md](references/plan.md) first
 6. Investigate root cause first when debugging is needed — load [references/debugging.md](references/debugging.md) first
 7. Load [references/implementation.md](references/implementation.md), then execute autonomously following its TDD and execution rules
-8. Run harsh review-and-patch loops on the diff — load [references/review.md](references/review.md) first
-9. Verify with fresh evidence — load [references/verification.md](references/verification.md) first
-10. Deliver a completion summary
+8. **Mandatory transition**: when implementation reaches GREEN, stop and load [references/review.md](references/review.md) before any other action. GREEN tests do not authorize completion — only a zero-findings review loop does.
+9. Run harsh review-and-patch loops on the diff following the loaded review procedure
+10. Verify with fresh evidence — load [references/verification.md](references/verification.md) first
+11. Deliver a completion summary
 
 Each stage must Read the linked reference file before starting work. Skipping a reference load is not allowed — the reference defines how to execute the stage, not just what the stage is about.
 

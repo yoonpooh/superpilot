@@ -30,8 +30,8 @@ Most agent workflow systems rely on stacking multiple external skills together. 
 | **Spec** | Write a concrete spec capturing goal, scope, design, edge cases, and testing strategy |
 | **Plan** | Decompose into executable tasks with file targets, test expectations, and verification steps |
 | **Debug** | When the task involves a bug: investigate root cause with evidence before proposing fixes |
-| **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green |
-| **Review** | Harsh diff-based review loops until actionable findings reach zero; for implementation work, fix findings inside the loop before completion |
+| **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green. GREEN triggers a mandatory transition to Review, not completion |
+| **Review** | Harsh diff-based review loops until actionable findings reach zero. Every patch requires a fresh re-review of the updated diff — patching a finding does not count as reviewing it |
 | **Verify** | Run fresh evidence-based verification — no "should work now" claims allowed |
 
 The original user request is treated as authorization to continue once the spec is clear enough to write correctly. The agent stops only for real safety gates.
@@ -43,7 +43,7 @@ The original user request is treated as authorization to continue once the spec 
 - **TDD by default** — no production code without a failing test first (when a test surface exists)
 - **Harsh review** — review the diff, not the codebase; for implementation work, absorb and patch findings inside the loop until zero actionable findings remain
 - **Evidence over confidence** — verification must produce observable proof, not assertions
-- **Review before completion** — passing tests does not replace the fresh final review pass
+- **Review before completion** — GREEN tests trigger review, not completion. Every patch requires a fresh re-review pass before exit
 - **State trace discipline** — when changes affect visible or persisted state, review must trace divergence, correction, and boundary behavior explicitly
 - **Minimal clarification** — ask only when the answer prevents building the wrong thing
 - **Scope discipline** — no speculative refactoring, no unrelated cleanup
