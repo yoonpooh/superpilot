@@ -115,6 +115,18 @@ Decide execution mode yourself.
 - every subagent prompt for implementation work must include TDD instructions when the change has a test surface
 - never write subagent prompts as bare edit instructions ("change line N to X") — include the TDD sequence or have the main agent write the failing test first
 
+### Subagent model selection
+
+When the runtime supports model selection for subagents, match model capability to task complexity:
+
+| Task type | Model tier | Examples |
+|-----------|-----------|----------|
+| Mechanical / repetitive | Lighter model (e.g., haiku, fast mode) | Rename symbol across files, add boilerplate tests, format conversions |
+| Standard implementation | Default model | Implement a bounded feature slice, write integration tests, fix a well-understood bug |
+| Architecture / judgment | Strongest available model | Design a new abstraction, resolve conflicting patterns, review complex state management |
+
+Do not default every subagent to the strongest model. Lighter models are faster and consume less context budget for tasks that do not require deep reasoning. When unsure, use the default model.
+
 ## Subagent Review Loop
 
 When subagents are used, keep the quality loop explicit:

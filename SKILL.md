@@ -215,6 +215,29 @@ When suggesting compaction, include a brief state summary so context can be reco
 현재 블로커: [if any]
 ```
 
+## User Signal Detection
+
+When the user expresses frustration or redirects the approach, treat it as an immediate process reset signal. Do not continue the current path.
+
+**Reset signals** — any of these means "stop and re-investigate from scratch":
+
+- "Stop guessing" / "추측 그만"
+- "That's not it" / "그게 아니라"
+- "You're going in circles" / "계속 반복하고 있잖아"
+- "Think harder" / "더 생각해봐"
+- "Read it again" / "다시 읽어봐"
+- Repeating the same instruction a second time
+- Rejecting two consecutive proposed approaches
+
+**On reset signal:**
+
+1. stop the current action immediately
+2. re-read the original error, spec, or user request from source — do not rely on your summary of it
+3. re-enter the appropriate stage from the beginning (debugging → step 1, implementation → re-read plan, review → re-capture diff)
+4. if the same approach was already tried, form a materially different hypothesis before proceeding
+
+Do not apologize and retry the same thing. The signal means the current approach is wrong, not that it needs one more attempt.
+
 ## Safety Gates
 
 Stop and ask the user only when:

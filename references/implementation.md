@@ -224,8 +224,14 @@ Stop and correct course if you catch yourself thinking:
 - “all changes are in one file, so they are all the same type”
 - “test runner is not available, so I will skip writing the test”
 - “I told the subagent to edit this line — no TDD needed for a simple edit”
+- “I'm following the spirit of TDD even though I wrote the code first”
+- “this is just a refactor, the behavior isn't changing”
+- “I already tested this manually, a written test is redundant”
+- “the existing tests are weak, so adding one more won't help”
+- “let me just get it working first, then I'll add tests”
+- “this is an MVP / simple version / basic structure — tests come later”
 
-These are shortcut patterns that reduce trust.
+These are rationalization patterns, not valid exceptions. The rules exist because these exact shortcuts have caused failures before. “Following the spirit” while violating the letter is still a violation — do not use the intent behind a rule to justify breaking it.
 
 ## Stage Exit Gate
 

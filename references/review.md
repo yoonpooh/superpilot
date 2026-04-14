@@ -84,12 +84,13 @@ For implementation tasks, repeat this loop:
 
 1. capture the current diff
 2. read every changed hunk
-3. run mandatory trace activities (see below) — these are concrete code-path traces, not checkbox items
-4. walk through every checklist item against every changed block — record what you checked and what you found per item
-5. answer every adversarial question — record each answer
-6. collect actionable findings
-7. if findings > 0: patch them, then go back to step 1 — **do not exit here**
-8. if findings = 0: this pass is a candidate for exit — check the exit condition below
+3. **spec compliance pass** — verify every changed behavior matches the current spec. Does the implementation do what was specified, not just "work"? If spec says X and code does Y, that is a finding even if Y is reasonable
+4. **code quality pass** — run mandatory trace activities, walk through every checklist item, answer every adversarial question. Do not start this pass until spec compliance is confirmed
+5. collect actionable findings from both passes
+6. if findings > 0: patch them, then go back to step 1 — **do not exit here**
+7. if findings = 0: this pass is a candidate for exit — check the exit condition below
+
+Spec compliance and code quality are separate concerns. A change that passes all quality checks but diverges from the spec is a finding. A change that matches the spec but has quality issues is also a finding. Do not let one pass compensate for the other.
 
 ### Findings carry-over on revert and reimplementation
 
@@ -100,9 +101,9 @@ When a revert-and-reimplement cycle occurs (e.g., TDD restart, approach change):
 - "the code was reverted" does not erase a finding — the finding describes a behavior gap that the new implementation must also address
 - treat prior findings as a checklist that the reimplementation must satisfy
 
-**The exit point is step 8, never step 7.** Patching a finding changes the diff. A changed diff is an unreviewed diff. You must return to step 1 and review the new diff that includes your patches. The patch itself can introduce new problems (e.g., a try-catch that swallows an exception needed for transaction rollback). Only when a full review pass on the post-patch diff produces zero findings may you exit.
+**The exit point is step 7, never step 6.** Patching a finding changes the diff. A changed diff is an unreviewed diff. You must return to step 1 and review the new diff that includes your patches. The patch itself can introduce new problems (e.g., a try-catch that swallows an exception needed for transaction rollback). Only when a full review pass on the post-patch diff produces zero findings may you exit.
 
-Steps 3, 4, and 5 are not optional. A review pass that skips any of these is not a valid review pass and does not count toward the zero-findings exit condition.
+Steps 3 and 4 are not optional and not interchangeable. A review pass that skips either pass, or merges them into a single undifferentiated scan, is not a valid review pass and does not count toward the zero-findings exit condition.
 
 For review-only tasks, run the same trace, checklist, and adversarial process, but stop after producing the findings report. Do not patch as part of the loop unless the user explicitly switches the task to fixing mode.
 
@@ -285,6 +286,10 @@ These are not acceptable:
 - assuming one entry point covers all paths to the same behavior without verifying
 - losing prior review findings after a revert-and-reimplement cycle
 - running traces as checkbox items (“N/A”, “OK”, “checked”) instead of citing specific line numbers and code flows
+- rationalizing a shallow review with “I wrote this code, so I know the intent”
+- skipping spec compliance check because “it obviously matches”
+- treating the review as a formality because tests already pass
+- saying “I'm following the spirit of the review process” while skipping mandatory steps
 
 ## Zero-Findings Gate
 
