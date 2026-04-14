@@ -65,6 +65,17 @@ For every user input that reaches the diff:
 - verify that validation catches these before they reach expensive operations
 - if invalid input can trigger an external API call or corrupt state, that is a finding
 
+### 5. Entry point coverage trace
+
+When the diff modifies behavior reachable through a specific entry point:
+
+- identify all entry points in the codebase that trigger the same behavior or reach the same code path
+- verify that the change applies correctly to every entry point, not just the one you happened to test
+- if an alternate entry point bypasses the changed code (e.g., a chatbot widget calls an API directly instead of going through the shared cart function), that is a finding
+- do not assume "I fixed function X, so all callers of X are covered" — verify that all callers actually go through X
+
+This trace catches the pattern where one entry point is fixed but a parallel entry point that does the same thing through a different code path is missed.
+
 If a trace activity does not apply to the current diff (e.g., no external calls, no new endpoints), skip it and state why it does not apply.
 
 ## Review Loop
@@ -79,6 +90,15 @@ For implementation tasks, repeat this loop:
 6. collect actionable findings
 7. if findings > 0: patch them, then go back to step 1 — **do not exit here**
 8. if findings = 0: this pass is a candidate for exit — check the exit condition below
+
+### Findings carry-over on revert and reimplementation
+
+When a revert-and-reimplement cycle occurs (e.g., TDD restart, approach change):
+
+- all findings from prior review passes remain active constraints
+- before exiting the review loop on the reimplemented code, verify that every prior finding is either resolved in the new implementation or explicitly marked as no longer applicable with a reason
+- "the code was reverted" does not erase a finding — the finding describes a behavior gap that the new implementation must also address
+- treat prior findings as a checklist that the reimplementation must satisfy
 
 **The exit point is step 8, never step 7.** Patching a finding changes the diff. A changed diff is an unreviewed diff. You must return to step 1 and review the new diff that includes your patches. The patch itself can introduce new problems (e.g., a try-catch that swallows an exception needed for transaction rollback). Only when a full review pass on the post-patch diff produces zero findings may you exit.
 
@@ -165,6 +185,7 @@ Before calling the review complete, answer all of these explicitly — write out
 - If malicious or malformed input reaches this path, what happens?
 - What would a strong reviewer challenge in this diff?
 - What would a user encounter on the first error or edge-case path?
+- Are there other entry points in the codebase that trigger the same behavior but bypass this change?
 
 If any answer produces a credible problem, that is a finding.
 
@@ -203,6 +224,25 @@ Use a deployment-blocker mindset:
 - for implementation work, review until that later code review should not find any new in-scope issue
 - do not let "tests pass now" create completion momentum that skips the final review pass
 
+### Trace quality standard
+
+A trace is not "I looked at this and it seems fine." A trace requires:
+
+- citing specific line numbers and the code flow you followed
+- stating what happens at each step, not just the final result
+- identifying unintended side effects even when the final output is correct
+
+"Result is the same" does not mean "no finding." An unintended mutation (e.g., a query builder method that mutates the original object, an ordering clause that propagates to a subsequent aggregate) is a finding even if the end result happens to be identical. The question is whether the behavior is intentional, not whether the output is unchanged.
+
+### Post-patch review discipline
+
+After patching a finding, the patched code is new code. Review it as if someone else wrote it:
+
+- do not carry "I just wrote this, so I know it works" bias into the next pass
+- trace the patched code through the same mandatory activities as the original diff
+- check whether the patch introduced new mutations, missing clones, or changed call semantics
+- a patch that fixes finding F1 can introduce finding F4 — the review loop exists precisely for this
+
 ## Common Review Failures
 
 These are not acceptable:
@@ -218,6 +258,10 @@ These are not acceptable:
 - reviewing your own code with less rigor because you wrote it and “know” it works
 - patching a finding and moving to completion or verification without re-reviewing the patched diff
 - treating “I fixed the issue” as equivalent to “the fix is verified” — the patch itself can introduce new problems
+- treating “result is the same” as “no finding” — unintended mutations are findings regardless of output equivalence
+- assuming one entry point covers all paths to the same behavior without verifying
+- losing prior review findings after a revert-and-reimplement cycle
+- running traces as checkbox items (“N/A”, “OK”, “checked”) instead of citing specific line numbers and code flows
 
 ## Zero-Findings Gate
 
