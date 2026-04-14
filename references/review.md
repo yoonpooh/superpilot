@@ -119,6 +119,29 @@ Completion is stricter than "I patched the last finding":
 
 If the same finding repeats for 2 consecutive rounds and you cannot resolve the disagreement with evidence, treat it as a judgment conflict and escalate to the user.
 
+### Stall detection
+
+Track the number of actionable findings per review pass. If the count does not decrease for 3 consecutive passes, the review loop is stalling.
+
+When a stall is detected:
+
+1. stop the loop immediately
+2. classify each remaining finding as one of:
+   - **fixable now** — clear solution exists but was missed in prior patches
+   - **design tension** — fixing it requires a design choice the spec does not cover
+   - **false positive** — the finding is not actually actionable on re-examination
+3. fix all "fixable now" items in one batch, then restart the loop
+4. escalate "design tension" items to the user with a concrete description of the trade-off
+5. drop "false positive" items with a one-line reason
+
+If stall persists after classification and re-attempt, escalate to the user with:
+
+- the current findings list
+- what was tried
+- what decision is needed
+
+Do not loop indefinitely. A stalling review loop wastes context and risks quality degradation.
+
 For implementation tasks, treat findings as internal work items:
 
 - patch them immediately when they are in scope and fixable now
@@ -289,6 +312,35 @@ Do not downgrade an issue just because:
 
 If the issue is in scope and fixable now, fix it now.
 
+## Parallel Specialist Review
+
+When the diff is large (spanning 5+ files or 3+ subsystems) or touches security-sensitive, performance-critical, or data-migration code, consider dispatching parallel specialist subagent reviews before the main agent's final review pass.
+
+### Available specialist lenses
+
+Use only the lenses relevant to the current diff. Do not spawn specialists for areas the diff does not touch.
+
+| Lens | Focus |
+|------|-------|
+| Security | auth, input sanitization, secrets exposure, injection vectors |
+| Performance | unbounded loops, N+1 queries, missing indexes, memory leaks |
+| API Contract | backward compatibility, schema changes, versioning |
+| Data Consistency | migration safety, dual-write correctness, rollback paths |
+| Test Coverage | untested branches, weak assertions, missing edge-case tests |
+
+### Execution rules
+
+- dispatch relevant specialists in parallel, each with a bounded scope (the diff + surrounding context)
+- each specialist returns a findings list with severity and file references
+- the main agent deduplicates findings across specialists — same issue reported by multiple specialists counts once but gains confidence
+- the main agent patches all actionable specialist findings before the final whole-diff review pass
+- specialist reviews do not replace the main agent's mandatory traces, checklist, or adversarial questions — they supplement them
+- do not dispatch specialists for trivial diffs or when only one subsystem is affected
+
+### Adaptive gating
+
+If the same specialist lens produces zero findings for 5 consecutive tasks in the same repository, it may be skipped for similar future diffs. Re-enable it when the diff touches that specialist's domain again.
+
 ## Final Responsibility
 
 Subagents may perform first-pass reviews for isolated slices, but the main agent must perform the final whole-diff review before completion.
@@ -297,3 +349,9 @@ The main agent must satisfy both of these before completion:
 
 1. the review-and-patch loop reached zero actionable findings
 2. a fresh final whole-diff review pass after the last patch also reached zero actionable findings
+
+## Stage Exit
+
+This stage is complete when both conditions above are met.
+
+Exit marker: `## REVIEW COMPLETE — 0 FINDINGS`

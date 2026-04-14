@@ -85,3 +85,13 @@ Once the root cause is supported by evidence:
 - capture the root cause in the plan or working notes
 - define the failing test or repro that will prove the fix
 - move to `implementation.md`
+
+## Stage Exit
+
+This stage is complete when:
+
+- the root cause is proven by evidence, not guessed
+- the root cause is captured in the plan or working notes
+- a failing test or repro path is defined for the fix
+
+Exit marker: `## ROOT CAUSE CONFIRMED`

@@ -38,19 +38,42 @@ If the request actually contains multiple independent projects, decompose it bef
 
 Ask clarifying questions only when they prevent building the wrong thing.
 
-Good clarifications:
+### Assumptions-first approach
+
+Instead of asking open-ended questions, analyze the codebase first and present structured assumptions for the user to correct:
+
+1. read the relevant code, tests, config, and recent git history
+2. form assumptions about scope, behavior, constraints, and approach
+3. present assumptions with confidence levels:
+   - **Confident** — evidence from code makes this clear (e.g., "DB uses PostgreSQL based on schema.prisma")
+   - **Likely** — reasonable inference from patterns (e.g., "auth follows the same middleware pattern as existing routes")
+   - **Unclear** — multiple valid directions, need user input (e.g., "should deleted items be soft-deleted or hard-deleted?")
+4. the user corrects only what is wrong — no need to confirm what is obviously right
+
+This reduces question count and shows the user you already understand their codebase.
+
+### When to ask directly instead
+
+Use direct questions when:
+
+- no existing code provides evidence for the assumption
+- the decision is purely about product intent, not technical implementation
+- conflicting patterns exist in the codebase and both are reasonable
+
+### Good clarifications
 
 - missing behavior definition
 - unclear scope boundaries
 - conflicting requirements
 - undefined success criteria
 
-Bad questions:
+### Bad questions
 
 - asking whether to proceed
 - asking whether to write a spec or plan
 - asking whether to use TDD
 - asking whether to use subagents
+- asking something the code already answers
 
 Ask one focused question at a time when possible.
 
@@ -131,3 +154,13 @@ Then:
 
 - move to the plan stage
 - do not ask for approval at routine execution checkpoints
+
+## Stage Exit
+
+This stage is complete when:
+
+- the spec file is written and self-reviewed
+- the spec path has been presented
+- the selected design has been summarized
+
+Exit marker: `## SPEC COMPLETE`

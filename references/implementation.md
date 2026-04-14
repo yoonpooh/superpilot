@@ -4,6 +4,21 @@
 
 Execute the current plan with tight scope control, strong TDD discipline, and minimal waste.
 
+## Pre-Edit Investigation Gate
+
+Before writing or editing any production file, confirm that you have read and understood:
+
+1. the file being changed — read it, do not rely on memory or assumptions
+2. all direct importers/callers of the changed symbol — grep for usages
+3. related schema, config, or type definitions that constrain the change
+4. the current spec and plan entries for this change
+
+If any of these have not been done for the current edit target, do the investigation first. Do not edit a file you have not read in this session.
+
+This gate applies to every edit, including "obvious" one-line fixes. The cost of reading first is low; the cost of editing with wrong assumptions is a broken review loop.
+
+Exception: test files being created for the first time do not require caller investigation (they have no callers yet).
+
 ## TDD Rules
 
 Core principle:
@@ -130,6 +145,42 @@ After subagent returns:
 - verify that the test actually tests the changed behavior, not just exists
 - run the test yourself — do not trust “tests pass” in the subagent report
 
+## Test Failure Triage
+
+When a test fails during implementation, classify it before spending time fixing it.
+
+### Classification
+
+| Category | Definition | Action |
+|----------|-----------|--------|
+| **In-branch** | Failure caused by changes in the current task | Fix immediately — this is your responsibility |
+| **Pre-existing** | Failure exists on the base branch before your changes | Do not fix unless it is in scope. Verify by checking out the base branch or using `git stash` to confirm the failure exists without your changes |
+| **Flaky** | Failure is non-deterministic and unrelated to your changes | Re-run once to confirm flakiness. If flaky, note it and move on. Do not spend time debugging intermittent failures outside your scope |
+
+### Triage procedure
+
+1. test fails
+2. check: does this test touch code you changed? (grep the test for your changed symbols)
+3. if yes → likely **in-branch**, investigate and fix
+4. if no → run `git stash && [test command] && git stash pop` or check base branch
+5. if the failure reproduces without your changes → **pre-existing**, skip
+6. if the failure does not reproduce consistently → **flaky**, note and skip
+
+### Do not
+
+- spend 30 minutes debugging a test that was already failing before your changes
+- silently skip a failing test without classifying it
+- disable or delete a pre-existing failing test to make your changes "green"
+- treat a flaky test as a blocker when it is not related to your changes
+
+### Reporting
+
+When skipping a pre-existing or flaky failure, note it briefly in the completion summary:
+
+```
+참고: `test_user_session_timeout` — 기존 실패 (base branch에서도 실패 확인)
+```
+
 ## Blocker Handling
 
 When blocked by a technical issue:
@@ -187,3 +238,5 @@ After all implementation slices are complete and green:
 3. do not write a completion summary, do not claim the task is done, do not move to verification
 
 No path from this stage leads to completion without passing through the Review stage first. If you find yourself about to report results to the user after GREEN without having loaded and executed review.md, you are skipping a mandatory stage.
+
+Exit marker: `## IMPLEMENTATION GREEN`

@@ -25,14 +25,14 @@ Most agent workflow systems rely on stacking multiple external skills together. 
 | Stage | What Happens |
 |---|---|
 | **Explore** | Read repository context, local guardrails (`AGENTS.md`, `CLAUDE.md`), and recent changes |
-| **Clarify** | Ask only what prevents building the wrong thing — skip routine approvals |
+| **Clarify** | Present code-based assumptions for the user to correct, rather than asking open-ended questions |
 | **Design** | Propose approaches with trade-offs, recommend one, collaborate with the user |
 | **Spec** | Write a concrete spec capturing goal, scope, design, edge cases, and testing strategy |
 | **Plan** | Decompose into executable tasks with file targets, test expectations, and verification steps |
 | **Debug** | When the task involves a bug: investigate root cause with evidence before proposing fixes |
-| **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green. GREEN triggers a mandatory transition to Review, not completion |
-| **Review** | Harsh diff-based review loops until actionable findings reach zero. Every patch requires a fresh re-review of the updated diff — patching a finding does not count as reviewing it |
-| **Verify** | Run fresh evidence-based verification — no "should work now" claims allowed |
+| **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green. Pre-edit investigation gate ensures files are read before edited. Test failures are triaged as in-branch, pre-existing, or flaky before investigation. GREEN triggers a mandatory transition to Review, not completion |
+| **Review** | Harsh diff-based review loops with stall detection (3 consecutive non-decreasing findings trigger escalation). Optional parallel specialist reviews (Security, Performance, API Contract, Data Consistency, Test Coverage) for large diffs. Every patch requires a fresh re-review |
+| **Verify** | 4-level verification (Exists → Substantive → Wired → Functional) with stub detection. No "should work now" claims allowed |
 
 The original user request is treated as authorization to continue once the spec is clear enough to write correctly. The agent stops only for real safety gates.
 
@@ -45,8 +45,13 @@ The original user request is treated as authorization to continue once the spec 
 - **Evidence over confidence** — verification must produce observable proof, not assertions
 - **Review before completion** — GREEN tests trigger review, not completion. Every patch requires a fresh re-review pass before exit
 - **State trace discipline** — when changes affect visible or persisted state, review must trace divergence, correction, and boundary behavior explicitly
-- **Minimal clarification** — ask only when the answer prevents building the wrong thing
+- **Assumptions-first clarification** — analyze codebase first, present assumptions with confidence levels, let user correct only what is wrong
 - **Scope discipline** — no speculative refactoring, no unrelated cleanup
+- **Pre-edit investigation** — every file must be read and its callers identified before editing; no edits based on assumptions
+- **Stage transition markers** — each stage has a defined exit marker that must be satisfied before advancing
+- **Context budget awareness** — behavior adapts across PEAK/GOOD/DEGRADING/POOR tiers to maintain output quality
+- **Agent self-recovery** — structured detection and recovery for agent loops, scope drift, and context degradation
+- **Test failure triage** — classify failures as in-branch, pre-existing, or flaky before spending time debugging
 
 ## Repository Layout
 
@@ -62,13 +67,14 @@ superpilot/
     ├── debugging.md                # Root-cause investigation procedure
     ├── implementation.md           # TDD, execution discipline, blocker handling
     ├── review.md                   # Harsh diff review procedure and checklist
-    └── verification.md             # Evidence-based verification and completion rules
+    ├── verification.md             # Evidence-based verification and completion rules
+    └── agent-recovery.md           # Agent loop, drift, and degradation recovery
 ```
 
 ### File Roles
 
 - **`SKILL.md`** — The main contract. Defines when to use Superpilot, the full workflow, hard rules, trivial exceptions, storage paths, and safety gates.
-- **`references/`** — Stage-specific guides. Each file covers how to execute one stage of the workflow in detail.
+- **`references/`** — Stage-specific guides. Each file covers how to execute one stage of the workflow in detail. Includes agent self-recovery for handling agent-level failures.
 - **`agents/openai.yaml`** — Agent interface for OpenAI Codex integration.
 
 ## Installation

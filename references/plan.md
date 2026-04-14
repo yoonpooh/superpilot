@@ -145,3 +145,14 @@ The main agent remains responsible for:
 - final integration
 - final review
 - final verification
+
+## Stage Exit
+
+This stage is complete when:
+
+- the plan file is written and self-reviewed
+- execution mode is chosen
+- task ordering and ownership are clear
+- no placeholder text remains
+
+Exit marker: `## PLAN COMPLETE`

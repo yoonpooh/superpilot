@@ -38,6 +38,67 @@ If ideal coverage is unavailable, run the strongest available alternative and re
 - “regression is covered” -> show the failing-then-passing test path or equivalent evidence
 - “task is complete” -> verify tests/build/manual checks and re-check the plan/spec coverage
 
+## Verification Depth Levels
+
+Not all verification claims require the same depth. Use the appropriate level for each claim, and do not stop at a lower level when a higher one is achievable.
+
+### Level 1: Exists
+
+The artifact (file, function, route, config entry) exists in the codebase.
+
+- grep or glob confirms the expected symbol, file, or configuration key is present
+- this level catches missing files and forgotten exports, but nothing else
+- **not sufficient for**: any behavior claim
+
+### Level 2: Substantive
+
+The artifact contains real logic, not a stub or placeholder.
+
+- read the implementation and confirm it is not: `return null`, `return {}`, empty handler, hardcoded value, TODO/FIXME placeholder, `pass`/`noop`
+- check that conditional branches have real bodies, not just the happy path
+- **not sufficient for**: integration or wiring claims
+
+### Level 3: Wired
+
+The artifact is connected to the rest of the system through its expected entry points.
+
+- trace the wiring: component→API, API→database, form→handler, state→render, route→controller
+- confirm imports, registrations, and bindings exist at each connection point
+- red flags: orphan component (exists but never mounted), handler registered but route missing, state updated but never read
+- **not sufficient for**: runtime behavior claims
+
+### Level 4: Functional
+
+The artifact produces correct behavior when exercised.
+
+- run tests, invoke the endpoint, trigger the UI flow, or execute the command
+- confirm the output, side effects, and state changes match the spec
+- this is the only level that supports "it works" claims
+
+### Verification level selection
+
+| Claim type | Minimum level |
+|-----------|--------------|
+| "file created" | Level 1 |
+| "function implemented" | Level 2 |
+| "endpoint registered and connected" | Level 3 |
+| "feature works" / "bug fixed" | Level 4 |
+
+When the strongest available verification is below the minimum level (e.g., no test runner available for a Level 4 claim), run the highest achievable level and explicitly report the gap.
+
+### Stub detection patterns
+
+When verifying at Level 2 or above, grep for these patterns in the changed files:
+
+- `TODO`, `FIXME`, `XXX`, `HACK`, `PLACEHOLDER`
+- `return null`, `return undefined`, `return {}`, `return []`
+- empty function/method bodies
+- hardcoded values where dynamic values are expected
+- `console.log` or `print` as the only side effect
+- `pass` (Python), `noop` (JS), `_ = ...` (Go)
+
+If any are found in code claimed as "implemented," that is a verification failure.
+
 ## Not Enough
 
 These are not sufficient:
@@ -134,6 +195,8 @@ Before the final handoff for an implementation task:
 7. only then write the completion summary
 
 If step 4 is missing, do not claim the task is complete even if tests or builds are green.
+
+Exit marker: `## VERIFICATION PASSED`
 
 ## Review-Only Final Check
 

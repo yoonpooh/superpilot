@@ -72,6 +72,23 @@ For non-trivial work, follow this path:
 
 Each stage must Read the linked reference file before starting work. Skipping a reference load is not allowed — the reference defines how to execute the stage, not just what the stage is about.
 
+### Stage transition markers
+
+Each stage ends with a completion marker that confirms the stage was properly completed before moving on. These markers serve as handoff contracts between stages.
+
+| Stage | Exit marker | Meaning |
+|-------|-----------|---------|
+| Spec | `## SPEC COMPLETE` | Spec written, self-reviewed, path provided |
+| Plan | `## PLAN COMPLETE` | Plan written, self-reviewed, execution mode chosen |
+| Debugging | `## ROOT CAUSE CONFIRMED` | Root cause proven by evidence, captured in plan |
+| Implementation | `## IMPLEMENTATION GREEN` | All slices green, ready for review |
+| Review | `## REVIEW COMPLETE — 0 FINDINGS` | Zero findings on fresh final pass |
+| Verification | `## VERIFICATION PASSED` | Fresh evidence supports all claims |
+
+When transitioning between stages, confirm the previous stage's exit marker condition is met. Do not advance if the exit condition is not satisfied.
+
+For agent recovery interruptions, the current stage's marker remains unsatisfied. After recovery, resume from the incomplete stage, not the next one.
+
 Once the request is clear enough to produce a correct spec, treat the original user request as authorization to continue through planning and implementation. Do not introduce approval gates unless a safety gate triggers.
 
 If the user explicitly asks for review-only output on an existing diff, branch, commit, or pull request, switch to review-only mode:
@@ -143,8 +160,60 @@ Load the relevant reference file for the current stage:
 - [references/implementation.md](references/implementation.md): TDD, execution discipline, blocker handling
 - [references/review.md](references/review.md): harsh diff review procedure and checklist
 - [references/verification.md](references/verification.md): evidence-based verification and completion rules
+- [references/agent-recovery.md](references/agent-recovery.md): agent loop, drift, and degradation detection and recovery
 
 The main file defines the contract. The reference files define how to execute each stage.
+
+## Context Management
+
+### Context budget tiers
+
+Be aware of how much context has been consumed during the session. Adjust behavior as context fills:
+
+| Tier | Utilization | Behavior |
+|------|------------|----------|
+| PEAK | 0–30% | Full exploration, detailed traces, read broadly |
+| GOOD | 30–50% | Normal execution, read what is needed |
+| DEGRADING | 50–70% | Prefer targeted reads over broad exploration, keep review traces focused on changed code, avoid re-reading unchanged files |
+| POOR | 70%+ | Finish current task minimally, suggest compaction before starting new work, do not start new exploration |
+
+### Degradation warning signs
+
+Watch for these signals that context quality is dropping:
+
+- review traces becoming shallow or generic
+- skipping checklist items or adversarial questions
+- making claims without running verification
+- losing track of prior findings or plan progress
+- responses becoming vague where they were previously specific
+
+If 2+ of these appear, enter agent recovery — load [references/agent-recovery.md](references/agent-recovery.md).
+
+### Strategic compaction
+
+Do not wait for automatic compaction to disrupt the workflow. Suggest manual compaction at natural stage boundaries:
+
+**Good compaction points:**
+
+- after spec is written, before planning starts
+- after plan is written, before implementation starts
+- after implementation reaches GREEN, before review starts
+- after review loop completes, before verification starts
+
+**Bad compaction points:**
+
+- mid-implementation between TDD cycles
+- mid-review between finding and patching
+- while waiting for a subagent to return
+
+When suggesting compaction, include a brief state summary so context can be recovered:
+
+```
+현재 상태: [stage] 단계, [task X/N] 진행 중
+완료: [what is done]
+남은 작업: [what remains]
+현재 블로커: [if any]
+```
 
 ## Safety Gates
 
