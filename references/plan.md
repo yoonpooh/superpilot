@@ -112,6 +112,8 @@ Decide execution mode yourself.
 - treat subagents as accelerators, not final owners
 - do not assign overlapping write targets to multiple subagents
 - ask the subagent to report focused verification results, but do not treat that as final verification
+- every subagent prompt for implementation work must include TDD instructions when the change has a test surface
+- never write subagent prompts as bare edit instructions ("change line N to X") — include the TDD sequence or have the main agent write the failing test first
 
 ## Subagent Review Loop
 

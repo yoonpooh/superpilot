@@ -28,6 +28,10 @@ Do not use these as excuses to skip TDD:
 - simple version
 - basic structure first
 - existing project has weak tests
+- test runner or dependencies not installed
+- vendor directory missing
+
+Test code itself proves intent. Writing the test is mandatory even when the execution environment is unavailable. Record that verification was deferred, but do not skip the test.
 
 Valid narrow exceptions:
 
@@ -107,6 +111,24 @@ Bad subagent tasks:
 - “look around and tell me what you think”
 - editing overlapping files
 - splitting one tightly coupled function chain into multiple owners
+- “edit this line to X” without TDD context
+
+### Subagent TDD Ownership
+
+The main agent owns the TDD process. Delegating implementation does not delegate TDD responsibility.
+
+When dispatching a subagent for implementation work:
+
+- Option A: main agent writes the failing test first, confirms RED, then dispatches subagent with “make this test pass” as the goal
+- Option B: subagent prompt explicitly includes the full TDD sequence — “write failing test first, confirm RED, then implement”
+
+Never dispatch a subagent with edit-only instructions when the change has a test surface. A prompt like “change line N to X” skips TDD by construction.
+
+After subagent returns:
+
+- verify that a test was written if the change has a test surface
+- verify that the test actually tests the changed behavior, not just exists
+- run the test yourself — do not trust “tests pass” in the subagent report
 
 ## Blocker Handling
 
@@ -128,6 +150,16 @@ Do not silently stop at the first failure.
 - do not let “looks correct” replace running tests
 - do not widen scope while implementing just because adjacent code is tempting to clean up
 
+### Bundled Changes and TDD
+
+When multiple changes target the same file, evaluate each change independently for test surface.
+
+- do not classify all changes as “non-testable” because some are CSS-only or config-only
+- if one change in the bundle has a test surface, that change requires TDD regardless of what the other changes are
+- when bundling testable and non-testable changes, execute the testable ones through TDD first
+
+A file boundary is not a TDD boundary. Behavior boundaries are.
+
 ## Red Flags
 
 Stop and correct course if you catch yourself thinking:
@@ -138,6 +170,9 @@ Stop and correct course if you catch yourself thinking:
 - “the subagent said it is done, that is probably enough”
 - “tests are green, so the task is done — I can skip review”
 - “while I am here, I should clean up these unrelated files too”
+- “all changes are in one file, so they are all the same type”
+- “test runner is not available, so I will skip writing the test”
+- “I told the subagent to edit this line — no TDD needed for a simple edit”
 
 These are shortcut patterns that reduce trust.
 
