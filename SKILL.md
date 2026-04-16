@@ -65,7 +65,7 @@ For non-trivial work, follow this path:
 5. Write a plan — load [references/plan.md](references/plan.md) first
 6. Investigate root cause first when debugging is needed — load [references/debugging.md](references/debugging.md) first
 7. Load [references/implementation.md](references/implementation.md), then execute autonomously following its TDD and execution rules
-8. **Mandatory transition**: when implementation reaches GREEN, stop and load [references/review.md](references/review.md) before any other action. GREEN tests do not authorize completion — only a zero-findings review loop does.
+8. **Mandatory transition**: when implementation reaches GREEN, stop and load [references/review.md](references/review.md) before any other action. GREEN tests do not authorize completion — only a zero-findings review loop does. **This transition is never exempt — not by trivial status, not by mechanical simplicity, not by test confidence.**
 9. Run harsh review-and-patch loops on the diff following the loaded review procedure
 10. Verify with fresh evidence — load [references/verification.md](references/verification.md) first
 11. Deliver a completion summary
@@ -123,14 +123,41 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 
 ## Trivial Exception
 
-Only truly trivial work may skip the full workflow. A task is trivial only when all of these are true:
+Only truly trivial work may skip the spec and plan. A task is trivial only when **all four** of these are true:
 
 - single-line or few-character change
 - zero ambiguity about what to change
 - zero side-effect risk
 - no design decision involved
 
-Trivial work may skip the spec and plan, but it must still respect local guardrails, verification, and scope discipline.
+### Quantitative guard
+
+If **any** of these is true, the task is **not trivial** regardless of how mechanically simple each individual change looks:
+
+- 2+ files changed
+- 3+ change sites (hunks)
+- an existing test would break from the change
+
+### Anti-rationalization patterns
+
+These are **not** valid arguments for trivial classification:
+
+- "same pattern repeated across files → effectively single-line" — the rule measures **change scope** (file count, site count), not pattern complexity
+- "mechanical / search-and-replace change → trivial" — mechanical changes across multiple files have higher miss risk, not lower
+- "display-only / formatting change → zero side-effect" — if a test asserts the old format, side-effect risk is nonzero
+- "simple change, so process cost exceeds risk" — simple changes are cheap to review; skipping is where the real cost hides
+
+### What trivial skips and what it does not
+
+Trivial work may skip the **spec and plan** only. It must still respect:
+
+- TDD — if a test surface exists (including existing tests that would break), TDD applies
+- review loop — the mandatory transition from GREEN to review is **never** skipped by trivial status
+- local guardrails (AGENTS.md, CLAUDE.md)
+- verification
+- scope discipline
+
+**The trivial exception is narrow by design.** When in doubt, classify as non-trivial. The cost of running an unnecessary review loop is minutes; the cost of shipping an unreviewed multi-file change is a bug.
 
 ## Storage
 

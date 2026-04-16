@@ -48,7 +48,18 @@ Do not use these as excuses to skip TDD:
 
 Test code itself proves intent. Writing the test is mandatory even when the execution environment is unavailable. Record that verification was deferred, but do not skip the test.
 
-Valid narrow exceptions:
+### Existing test as TDD trigger
+
+If an existing test would break from your change, that change **has a test surface by definition**. The existing test proves it. TDD applies unconditionally:
+
+1. change the test assertion to the new expected value → RED
+2. confirm it fails for the expected reason (old behavior still in production code)
+3. make the production change → GREEN
+4. proceed to review
+
+"The change is just a format string / config value / display tweak" is not an exception when a test already asserts the old value. The test's existence is the signal, not your judgment of the change's complexity.
+
+### Valid narrow exceptions
 
 - copy-only change
 - config-only change with no executable surface
@@ -230,6 +241,10 @@ Stop and correct course if you catch yourself thinking:
 - “the existing tests are weak, so adding one more won't help”
 - “let me just get it working first, then I'll add tests”
 - “this is an MVP / simple version / basic structure — tests come later”
+- “format/display change, not logic — TDD unnecessary”
+- “same pattern across N files — effectively single-line, so trivial”
+- “mechanically simple, so the process overhead exceeds the risk”
+- “existing test will break but it's just updating an assertion, not real TDD”
 
 These are rationalization patterns, not valid exceptions. The rules exist because these exact shortcuts have caused failures before. “Following the spirit” while violating the letter is still a violation — do not use the intent behind a rule to justify breaking it.
 

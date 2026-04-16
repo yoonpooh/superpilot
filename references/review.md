@@ -290,6 +290,8 @@ These are not acceptable:
 - skipping spec compliance check because “it obviously matches”
 - treating the review as a formality because tests already pass
 - saying “I'm following the spirit of the review process” while skipping mandatory steps
+- skipping the entire review loop because the change was classified as “trivial” — trivial status exempts spec and plan only, never the review loop
+- equating “mechanically simple change” with “process is unnecessary” — simple changes are cheap to review and easy to miss; the review cost is low, the skip cost is a shipped bug
 
 ## Zero-Findings Gate
 
