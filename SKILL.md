@@ -111,6 +111,7 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - Review the diff, not the untouched codebase, and keep looping until actionable findings reach zero.
 - Every review pass must run mandatory trace activities, walk through every checklist item, and answer every adversarial question against the diff. A review pass that skips any of these is not a valid pass and does not count toward the zero-findings exit condition.
 - Mandatory trace activities require tracing actual code paths (failure paths, state consistency, access control, input boundaries), not checking boxes. If the diff has an external API call, trace what happens when it fails. If the diff has a new endpoint, compare its access control to existing endpoints. If the diff updates state in two places, trace what happens when one update fails.
+- For request-entry, redirect, auth, middleware, canonicalization, token, cookie, query-param, or session changes, treat execution order and preservation of global invariants as first-class review concerns, not implicit assumptions.
 - Treat review findings as internal work items unless the user explicitly asks for a review-only report.
 - For implementation tasks, do not call the work complete until the internal review loop has already absorbed and patched all in-scope actionable findings.
 - Do not call the task complete until a fresh final review pass after the last patch also returns zero actionable findings.

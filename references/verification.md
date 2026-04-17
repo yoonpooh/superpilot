@@ -28,6 +28,13 @@ Match verification strength to the change:
 - config, build, or CI change -> build plus smoke checks
 - skill or workflow-rule change -> loadability, consistency, and targeted text validation
 
+For request-entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session changes, verification must prove two separate claims:
+
+- the new behavior works
+- the pre-existing global invariants still hold
+
+Do not treat proof of the first claim as proof of the second.
+
 If ideal coverage is unavailable, run the strongest available alternative and report the gap briefly.
 
 ## Common Claim Mapping
@@ -143,6 +150,7 @@ Before final completion of an implementation task, re-read the current spec and 
 - the last review pass happened after the last code patch and still found zero actionable findings
 - the work was not closed merely because tests turned green again
 - state transitions, failure corrections, and boundary restores were checked where the diff changes visible or persisted state
+- if the diff touched request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, both the new behavior and the preserved global invariants were explicitly verified
 
 ## Final Summary
 

@@ -13,6 +13,15 @@ Before writing or editing any production file, confirm that you have read and un
 3. related schema, config, or type definitions that constrain the change
 4. the current spec and plan entries for this change
 
+For bootstrap, middleware, config, or request-entry changes, caller tracing alone is not enough. Also investigate execution order:
+
+- what runs immediately before the changed code in the real request lifecycle
+- what runs immediately after it
+- which existing global security, canonicalization, validation, or auth steps must happen before sensitive input is processed
+- whether the new logic bypasses or precedes any of those steps
+
+If the change touches redirect, auth, middleware, canonicalization, token, cookie, query param, or session handling, explicitly confirm the new code does not consume or act on sensitive input before the existing global invariants unless the spec intentionally requires that behavior.
+
 If any of these have not been done for the current edit target, do the investigation first. Do not edit a file you have not read in this session.
 
 This gate applies to every edit, including "obvious" one-line fixes. The cost of reading first is low; the cost of editing with wrong assumptions is a broken review loop.

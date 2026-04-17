@@ -76,6 +76,16 @@ When the diff modifies behavior reachable through a specific entry point:
 
 This trace catches the pattern where one entry point is fixed but a parallel entry point that does the same thing through a different code path is missed.
 
+### 6. Execution-order and canonicalization trace
+
+When the diff touches redirect, auth, session, cookie, token, query param, middleware, canonicalization, or request-entry handling:
+
+- trace the exact execution order through the real request lifecycle
+- identify the existing global canonicalization, HTTPS enforcement, auth gates, validation layers, and middleware ordering
+- verify the new code does not process sensitive input before those layers unless the spec explicitly requires that ordering change
+- verify the change does not create a new path that bypasses existing global redirect, security, or normalization behavior
+- if sensitive tokens, codes, keys, cookies, or session state can be consumed, logged, redirected, or persisted before transport/security normalization, that is a finding
+
 If a trace activity does not apply to the current diff (e.g., no external calls, no new endpoints), skip it and state why it does not apply.
 
 ## Review Loop
@@ -175,6 +185,8 @@ For every review pass:
 
 If steps 4 or 5 produced no findings at all, re-read the diff one more time with the assumption that you missed something. A non-trivial change that triggers zero checklist findings on the first pass is almost always under-reviewed, not perfect.
 
+Treat small diffs in bootstrap, middleware, redirect, auth, token, query-param, session, cookie, canonicalization, and request-entry code as high-risk by default. A first-pass zero-findings result on these diffs is not credible without an additional order/security-focused pass.
+
 If untracked files are part of the task, the review is incomplete until those files have also been read in full or staged so they appear in the final whole-diff pass.
 
 ## Checklist
@@ -188,6 +200,7 @@ For each item, identify the relevant changed code and state what you checked:
 - return-value and caller compatibility — do all callers still match the new contract?
 - regression risk to existing callers — could an existing consumer break from this change?
 - concurrency and ordering assumptions — are there race conditions, duplicate submissions, or ordering dependencies?
+- execution order and global invariants — does the change run in the same safe place in the lifecycle, or does it now precede global redirect, auth, validation, canonicalization, or transport-security rules?
 - data and state consistency — can local state, remote state, and user-visible state diverge? if optimistic updates exist, is there rollback, reconciliation, or explicit failed state?
 - performance or resource blowups — can this path be called in an unbounded loop or without rate limiting?
 - security and sensitive-data exposure — are secrets, PII, or internal details leaked in logs, responses, or error messages?
@@ -210,6 +223,7 @@ Before calling the review complete, answer all of these explicitly — write out
 - What would a strong reviewer challenge in this diff?
 - What would a user encounter on the first error or edge-case path?
 - Are there other entry points in the codebase that trigger the same behavior but bypass this change?
+- Did this diff move sensitive input handling earlier than an existing global redirect, auth, canonicalization, or security boundary?
 
 If any answer produces a credible problem, that is a finding.
 
@@ -306,6 +320,8 @@ Before declaring zero actionable findings on any review pass, confirm all of the
 If you cannot confirm all five, the review pass is incomplete. Go back and finish it.
 
 A non-trivial diff where the first review pass finds zero findings is almost certainly under-reviewed. When this happens, re-read the diff with a different lens: trace an error path end-to-end, trace a malicious input end-to-end, or trace a state mutation end-to-end. If the second reading still finds nothing, the zero is credible.
+
+For small but global diffs in bootstrap, middleware, redirect, auth, token, query-param, session, cookie, canonicalization, or request-entry code, the second reading must include an explicit execution-order and invariant-preservation pass. Without that pass, the zero is not credible.
 
 ## Severity
 

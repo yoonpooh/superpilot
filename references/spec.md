@@ -123,8 +123,28 @@ Use this structure:
 
 ## Testing Strategy
 
+## Global Invariants
+
+## Ordering and Safety Notes
+
 ## Execution Readiness
 ```
+
+`## Global Invariants` should list the existing cross-cutting rules that must remain true after the change. Examples:
+
+- canonical redirects
+- HTTPS enforcement
+- auth gates
+- CSRF/session boundaries
+- cache invalidation order
+
+`## Ordering and Safety Notes` is required when the change touches request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior. State:
+
+- whether the new logic runs before or after the relevant global invariants
+- why that ordering is safe
+- whether any existing global flow is intentionally changed
+
+If the spec cannot explain why the ordering is safe, the design is not ready for implementation.
 
 Keep the spec concrete. Avoid placeholders and vague statements like:
 
@@ -141,6 +161,7 @@ Before transitioning to planning:
 2. check internal consistency across sections
 3. confirm the design matches the requested scope
 4. confirm the testing strategy actually covers the proposed change
+5. if the change touches request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, confirm the spec explicitly names the affected global invariants and execution order
 
 ## Execution Transition
 
