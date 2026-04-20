@@ -4,6 +4,19 @@
 
 Execute the current plan with tight scope control, strong TDD discipline, and minimal waste.
 
+Autonomy matters here: the goal is to keep moving from plan to verified implementation without routine user intervention, while still stopping for real safety or ambiguity gates.
+
+## Execution Setup Gate
+
+Before editing production code, confirm the execution environment is appropriate for autonomous work:
+
+1. check whether the current tree is clean enough for in-place work
+2. if not, decide whether isolated branch or worktree execution is needed
+3. identify the proving command(s) that define a clean baseline for this task
+4. if the task is large or parallelizable, decide which slices should move to fresh subagents
+
+For risky work, do not drift into implementation without an explicit workspace and baseline decision. Clean diff capture is part of quality, not a convenience.
+
 ## Pre-Edit Investigation Gate
 
 Before writing or editing any production file, confirm that you have read and understood:
@@ -27,6 +40,16 @@ If any of these have not been done for the current edit target, do the investiga
 This gate applies to every edit, including "obvious" one-line fixes. The cost of reading first is low; the cost of editing with wrong assumptions is a broken review loop.
 
 Exception: test files being created for the first time do not require caller investigation (they have no callers yet).
+
+## Research-First Execution
+
+If execution depends on framework behavior, third-party APIs, standards, or toolchain facts that are not stable from repo context alone:
+
+- pause and research the fact before editing
+- prefer official docs, specs, or primary sources
+- bring back only the decision-relevant conclusion
+
+Do not guess unfamiliar library behavior and “see if tests fail” when the correct answer is cheaply knowable from source material.
 
 ## TDD Rules
 
@@ -115,6 +138,20 @@ If surrounding checks fail, fix that before calling the slice complete.
 - do not opportunistically refactor neighboring code unless it directly supports the requested work
 - preserve existing patterns unless the spec intentionally changes them
 
+## Requirement Ledger Discipline
+
+Before starting each slice:
+
+- identify which requirement(s) from the spec ledger this slice satisfies
+- confirm the planned test or proving check covers those requirements
+
+After finishing each slice:
+
+- confirm the implemented behavior still matches the requirement wording
+- confirm no requested outcome was quietly deferred or dropped
+
+If a requirement no longer makes sense, stop and return to spec/plan clarification instead of silently narrowing the scope in code.
+
 ## Bug Fix Discipline
 
 For bug fixes:
@@ -123,6 +160,17 @@ For bug fixes:
 - map where relevant state is created, transformed, stored, restored, and rendered
 - avoid fixing only the first visible symptom if multiple consumers exist
 - use [debugging.md](debugging.md) when the root cause is not already proven
+
+## Drift-Sensitive Changes
+
+When the task changes any of these, treat all paired artifacts as part of the same slice:
+
+- ORM or database schema
+- API request/response contract
+- generated clients or type definitions
+- fixtures, seed data, snapshots, or docs that define the contract externally
+
+If the code change requires a migration, schema update, codegen refresh, fixture update, or doc update to stay truthful, that paired change is not optional cleanup — it is part of the implementation.
 
 ## Execution Strategy
 
@@ -147,6 +195,8 @@ Bad subagent tasks:
 - editing overlapping files
 - splitting one tightly coupled function chain into multiple owners
 - “edit this line to X” without TDD context
+
+When subagents are used for implementation, prefer fresh context per slice. Reusing one subagent across unrelated tasks increases context rot and hidden carry-over assumptions.
 
 ### Subagent TDD Ownership
 
@@ -220,6 +270,7 @@ Do not silently stop at the first failure.
 - review and integrate their work yourself
 - do not let “looks correct” replace running tests
 - do not widen scope while implementing just because adjacent code is tempting to clean up
+- do not treat missing migration/codegen/doc/fixture updates as “follow-up” when the changed behavior depends on them
 
 ### Bundled Changes and TDD
 

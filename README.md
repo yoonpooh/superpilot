@@ -16,6 +16,8 @@ Superpilot is a standalone workflow skill for AI coding agents working in existi
 
 Most agent workflow systems rely on stacking multiple external skills together. Superpilot takes a different approach: the entire process lives in one repository and requires no external dependencies.
 
+The design target is zero-intervention completion: the agent should research when facts matter, preserve the full requested scope, choose its own execution topology, and keep going until the work is actually verified.
+
 ## Workflow
 
 ```
@@ -24,32 +26,39 @@ Most agent workflow systems rely on stacking multiple external skills together. 
 
 | Stage | What Happens |
 |---|---|
-| **Explore** | Read repository context, local guardrails (`AGENTS.md`, `CLAUDE.md`), and recent changes |
+| **Explore** | Read repository context, local guardrails (`AGENTS.md`, `CLAUDE.md`), recent changes, baseline state, and whether isolated execution is needed |
 | **Clarify** | Present code-based assumptions for the user to correct, rather than asking open-ended questions |
-| **Design** | Propose approaches with trade-offs, recommend one, collaborate with the user |
-| **Spec** | Write a concrete spec capturing goal, scope, design, edge cases, and testing strategy |
-| **Plan** | Decompose into executable tasks with file targets, test expectations, and verification steps |
+| **Design** | Research when needed, challenge framing and hidden scope, propose approaches with trade-offs, recommend one, collaborate with the user |
+| **Spec** | Write a concrete spec capturing goal, requirement ledger, design, execution strategy, edge cases, and testing strategy |
+| **Plan** | Decompose into executable tasks with file targets, ownership, workspace strategy, requirement coverage, and verification steps |
 | **Debug** | When the task involves a bug: investigate root cause with evidence before proposing fixes |
-| **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green. Pre-edit investigation gate ensures files are read before edited. Test failures are triaged as in-branch, pre-existing, or flaky before investigation. GREEN triggers a mandatory transition to Review, not completion |
-| **Review** | Harsh diff-based review loops with stall detection (3 consecutive non-decreasing findings trigger escalation). Optional parallel specialist reviews (Security, Performance, API Contract, Data Consistency, Test Coverage) for large diffs. Every patch requires a fresh re-review |
-| **Verify** | 4-level verification (Exists → Substantive → Wired → Functional) with stub detection. No "should work now" claims allowed |
+| **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green. Pre-edit investigation gate ensures files are read before edited. Test failures are triaged as in-branch, pre-existing, or flaky before investigation. Workspace isolation and fresh subagents are used when they improve autonomy and clarity. GREEN triggers a mandatory transition to Review, not completion |
+| **Review** | Harsh diff-based review loops with stall detection (3 consecutive non-decreasing findings trigger escalation). Requirement-preservation, schema/contract drift, threat-model, UX, and DevEx lenses can all become findings. Optional parallel specialist reviews (Security, Performance, API Contract, Data Consistency, Test Coverage, UX/Design, DevEx) supplement the main review loop. Every patch requires a fresh re-review |
+| **Verify** | 4-level verification (Exists → Substantive → Wired → Functional) with stub detection. User-flow, onboarding/DX, migration/codegen, and abuse-path checks are required when relevant. No "should work now" claims allowed |
 
 The original user request is treated as authorization to continue once the spec is clear enough to write correctly. The agent stops only for real safety gates.
 
 ## Key Principles
 
 - **Self-contained** — no external workflow skills needed; runtime tools and subagents are used directly
+- **Zero-intervention by default** — routine execution does not wait for approval; the agent keeps moving unless a real safety gate or material ambiguity appears
+- **Research before guessing** — primary-source lookup is part of the workflow when external facts or library behavior matter
 - **Spec and plan first** — non-trivial work always gets a written spec and implementation plan
+- **Requirement-ledger discipline** — requested outcomes are tracked from user request through verification so scope cannot quietly shrink
 - **TDD by default** — no production code without a failing test first (when a test surface exists)
 - **Harsh review** — review the diff, not the codebase; for implementation work, absorb and patch findings inside the loop until zero actionable findings remain
 - **Evidence over confidence** — verification must produce observable proof, not assertions
 - **Review before completion** — GREEN tests trigger review, not completion. Every patch requires a fresh re-review pass before exit
+- **Execution topology is deliberate** — the agent chooses in-place work, isolated worktrees, or fresh subagents based on task risk and context budget
 - **State trace discipline** — when changes affect visible or persisted state, review must trace divergence, correction, and boundary behavior explicitly
+- **Real workflow proof** — user-facing, onboarding, and DX changes are not considered done without an actual walkthrough or strongest equivalent proof
+- **Drift detection** — schema, contract, generated artifact, fixture, and docs drift are treated as real defects, not cleanup
 - **Assumptions-first clarification** — analyze codebase first, present assumptions with confidence levels, let user correct only what is wrong
 - **Scope discipline** — no speculative refactoring, no unrelated cleanup
 - **Pre-edit investigation** — every file must be read and its callers identified before editing; no edits based on assumptions
 - **Stage transition markers** — each stage has a defined exit marker that must be satisfied before advancing
 - **Context budget awareness** — behavior adapts across PEAK/GOOD/DEGRADING/POOR tiers to maintain output quality
+- **Context-rot resistance** — fresh subagent contexts, compact stage summaries, and bounded research reduce quality decay on long tasks
 - **Agent self-recovery** — structured detection and recovery for agent loops, scope drift, and context degradation
 - **Test failure triage** — classify failures as in-branch, pre-existing, or flaky before spending time debugging
 
@@ -114,7 +123,8 @@ Add a rule to your agent instruction file to make Superpilot the default workflo
 # AGENTS.md or CLAUDE.md
 
 - For non-trivial work in existing repositories, use the `superpilot` skill first.
-- Let `superpilot` own spec, plan, TDD, review, and verification flow.
+- Let `superpilot` own research, spec, plan, TDD, review, and verification flow.
+- Let `superpilot` preserve requirement coverage and choose isolated worktrees or subagents when autonomy benefits from them.
 - Once the work is clear enough for a correct spec, treat the original request
   as authorization to continue unless a safety gate is triggered.
 ```

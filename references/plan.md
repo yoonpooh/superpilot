@@ -22,6 +22,7 @@ Write the plan to:
 - decompose by responsibility and file boundaries
 - keep steps concrete and executable
 - include tests and verification in the plan
+- preserve the full requirement ledger from the spec; do not let planning silently narrow the task
 - do not ask the user to choose the execution mode
 - do not put commit or PR steps into the plan unless the user explicitly asked for publishing workflow
 - do not leave placeholders, vague follow-ups, or “figure it out later” instructions
@@ -35,9 +36,13 @@ Use this shape:
 
 **Goal:** ...
 
+**Requirement Coverage:** ...
+
 **Architecture:** ...
 
 **Execution Mode:** direct / subagent / mixed
+
+**Workspace Strategy:** in-place / isolated branch / isolated worktree
 
 **Verification:** ...
 
@@ -48,6 +53,10 @@ Use this shape:
 **Files:**
 - Modify: `...`
 - Test: `...`
+
+**Ownership:** main agent / subagent
+
+**Requirements Covered:** ...
 
 - [ ] Step 1: ...
 - [ ] Step 2: ...
@@ -61,6 +70,8 @@ Every task should answer:
 - what behavior changes
 - what test proves the change
 - what verification proves readiness
+- which requirement(s) from the spec ledger it covers
+- who owns the slice and whether a fresh subagent context is needed
 
 ## Task Granularity
 
@@ -74,6 +85,8 @@ Prefer steps that are small enough to execute and verify cleanly:
 
 Do not collapse an entire subsystem change into one vague task if it can be decomposed safely.
 
+As a default heuristic, prefer slices that a strong engineer or fresh subagent could complete without guessing in roughly 2-15 minutes of focused work. The goal is not speed theater — it is low ambiguity and clean verification.
+
 ## Decomposition Rules
 
 Prefer small, coherent tasks.
@@ -85,6 +98,25 @@ Split by:
 - testable units
 
 Do not split by arbitrary technical layers if that increases coordination cost.
+
+## Workspace Strategy
+
+Choose the execution workspace explicitly in the plan.
+
+### Use in-place execution when:
+
+- the tree is clean or unrelated changes are easy to isolate mentally
+- the task is bounded and rollback risk is low
+- the same files will be touched iteratively by the main agent
+
+### Use an isolated branch or worktree when:
+
+- the working tree is already dirty
+- multiple parallel implementation or review threads are likely
+- the task is risky enough that clean diff capture matters
+- you want independent verification or subagent work without cross-contamination
+
+Do not ask the user to choose unless workspace setup itself would be destructive or conflicts with an explicit repository policy.
 
 ## Direct vs Subagent Execution
 
@@ -107,6 +139,7 @@ Decide execution mode yourself.
 ### Subagent constraints
 
 - assign one self-contained responsibility per subagent
+- prefer a fresh subagent per independent task so stale context does not leak between slices
 - give each subagent an explicit file scope
 - do not split a single tightly coupled call chain across multiple subagents
 - treat subagents as accelerators, not final owners
@@ -142,6 +175,28 @@ When subagents are used, keep the quality loop explicit:
 
 Do not let a subagent's self-confidence replace review.
 
+## Plan Challenge Passes
+
+Before execution, pressure-test the plan through the lenses relevant to the task. Use only the lenses that matter.
+
+- Product / scope: is the plan solving the real request, or only the implementation-shaped surface of it?
+- Engineering: are architecture, error paths, state flow, and tests concrete enough to execute without guessing?
+- Design / UX: for user-facing work, will the result feel intentional rather than merely functional?
+- DevEx / onboarding: for tooling, docs, or setup flows, does the plan preserve a short path to first success?
+- Security: for auth, secrets, permissions, or external execution, is the threat model and verification path explicit?
+
+Fold challenge findings back into the plan before implementation starts.
+
+## Scope Reduction Detection
+
+Before execution, compare the plan against:
+
+- the original user request
+- the spec's requirement ledger
+- the chosen design summary
+
+If any requested or implied requirement has no owning task and no stated non-goal, the plan is incomplete. Add the missing task or explicitly narrow scope with a reason.
+
 ## Plan Self-Review
 
 Before execution starts, review the plan for:
@@ -151,6 +206,8 @@ Before execution starts, review the plan for:
 - task ordering errors
 - overlapping ownership between planned subagents
 - missing verification steps
+- silent scope reduction relative to the user request or requirement ledger
+- weak workspace strategy for the actual task risk
 
 The main agent remains responsible for:
 

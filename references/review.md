@@ -23,6 +23,7 @@ If the task itself is review-only, this stage becomes the primary deliverable:
 - if a new file is part of the work, either read it directly during review or stage it before the final whole-diff review pass
 - review the changed lines first, then read as far beyond the immediate calling context as needed to complete the mandatory traces and contract checks correctly
 - do not pad the review with unrelated unchanged code
+- compare the diff against the spec requirement ledger so missing requested behavior is visible during review, not after handoff
 
 ## Mandatory Trace Activities
 
@@ -88,6 +89,40 @@ When the diff touches redirect, auth, session, cookie, token, query param, middl
 
 If a trace activity does not apply to the current diff (e.g., no external calls, no new endpoints), skip it and state why it does not apply.
 
+### 7. Requirement-coverage trace
+
+For the current diff, trace each item in the spec requirement ledger:
+
+- identify where the requirement is implemented, verified, or intentionally deferred
+- if a requested or implied requirement has no matching code, test, or explicit non-goal, that is a finding
+- if the plan quietly reduced scope compared with the user request, that is a finding
+
+### 8. Schema and contract drift trace
+
+When the diff changes schemas, contracts, generated types, fixtures, or externally consumed examples:
+
+- identify every paired artifact that should move with the change
+- verify migrations, codegen, snapshots, docs, fixtures, and tests still agree
+- if one artifact changed but its contract-defining pair did not, that is a finding
+
+### 9. User-journey and DX trace
+
+When the diff affects UI, onboarding, docs, setup, developer tooling, or operational workflows:
+
+- trace the primary happy path from the user or developer point of view
+- trace the first likely failure or confusion point
+- verify labels, instructions, empty states, error states, and “first successful outcome” flow are coherent
+- if the code technically works but the intended journey still stalls, misleads, or feels incomplete, that is a finding
+
+### 10. Threat-model trace
+
+When the diff touches auth, permissions, secrets, uploads, external execution, payments, admin surfaces, or sensitive data:
+
+- state the most plausible abuse or misuse case
+- trace whether the current controls stop it
+- verify logging, error handling, redirects, and retries do not expose sensitive material
+- if the change relies on “nobody will try that” as a defense, that is a finding
+
 ## Review Loop
 
 For implementation tasks, repeat this loop:
@@ -95,7 +130,7 @@ For implementation tasks, repeat this loop:
 1. capture the current diff
 2. read every changed hunk
 3. **spec compliance pass** — verify every changed behavior matches the current spec. Does the implementation do what was specified, not just "work"? If spec says X and code does Y, that is a finding even if Y is reasonable
-4. **code quality pass** — run mandatory trace activities, walk through every checklist item, answer every adversarial question. Do not start this pass until spec compliance is confirmed
+4. **code quality pass** — run mandatory trace activities, walk through every checklist item, answer every adversarial question. Do not start this pass until spec compliance and requirement coverage are confirmed
 5. collect actionable findings from both passes
 6. if findings > 0: patch them, then go back to step 1 — **do not exit here**
 7. if findings = 0: this pass is a candidate for exit — check the exit condition below
@@ -179,6 +214,7 @@ For every review pass:
    - what can fail here?
    - does the caller still match the contract?
    - is this consistent with nearby code patterns?
+   - which requirement or user outcome does this block satisfy?
 4. Walk through every checklist item below against the diff — do not skip items, do not batch them as "all fine"
 5. Answer every adversarial question below — write out each answer, even when the answer is "no issue"
 6. Record findings with exact file references from the diff or changed files so they can be patched precisely
@@ -206,10 +242,14 @@ For each item, identify the relevant changed code and state what you checked:
 - security and sensitive-data exposure — are secrets, PII, or internal details leaked in logs, responses, or error messages?
 - test coverage for the most plausible failure mode — is there a test for the first thing that would break?
 - actual alignment with the current spec — for implementation tasks, does the implementation match what was specified, not just "work"?
+- requirement ledger coverage — did any requested or implied outcome disappear between request, spec, plan, and diff?
 - actual alignment with the requested review target — for review-only tasks with no spec, does the finding reflect the stated scope and artifact under review?
 - operability and debuggability — can you diagnose a production failure from logs alone?
 - partial failure behavior — if this operation half-succeeds, what state is left behind?
 - dead code and unused parameters — are there parameters validated but never sent, or code paths that can never execute?
+- schema / contract drift — do migrations, codegen, fixtures, docs, and examples still agree with the changed behavior?
+- UX / DX journey quality — does the primary user or developer path actually become complete, understandable, and usable?
+- threat-model alignment — for sensitive flows, were likely abuse paths checked explicitly instead of assumed away?
 
 ## Adversarial Questions
 
@@ -224,6 +264,9 @@ Before calling the review complete, answer all of these explicitly — write out
 - What would a user encounter on the first error or edge-case path?
 - Are there other entry points in the codebase that trigger the same behavior but bypass this change?
 - Did this diff move sensitive input handling earlier than an existing global redirect, auth, canonicalization, or security boundary?
+- What requested outcome silently disappeared between the user request, spec, plan, and diff?
+- If this change is truly complete, what paired migration, generated artifact, fixture, example, or doc update should exist?
+- If a first-time user or developer follows the changed flow cold, where do they get stuck first?
 
 If any answer produces a credible problem, that is a finding.
 
@@ -350,6 +393,8 @@ Use only the lenses relevant to the current diff. Do not spawn specialists for a
 | API Contract | backward compatibility, schema changes, versioning |
 | Data Consistency | migration safety, dual-write correctness, rollback paths |
 | Test Coverage | untested branches, weak assertions, missing edge-case tests |
+| UX / Design | user journey completeness, copy, state transitions, visual or interaction regressions |
+| DevEx | onboarding, setup friction, docs truthfulness, time-to-first-success |
 
 ### Execution rules
 

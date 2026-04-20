@@ -9,6 +9,7 @@ Skip this stage only when the task is truly trivial under the exception defined 
 For non-trivial work:
 
 - explore context first
+- research before guessing when external facts could change the design
 - collaborate with the user on the design
 - write the spec
 - continue into planning once the request is clear enough to describe correctly
@@ -22,9 +23,22 @@ Before asking detailed questions:
 - resolve the repository root
 - read repo-root agent instruction files such as `AGENTS.md` and `CLAUDE.md` if present
 - inspect the relevant files, docs, and recent changes
+- inspect the current baseline and whether the worktree is clean enough for in-place execution
 - identify whether the request is narrowly scoped or crosses multiple subsystems
+- if libraries, frameworks, APIs, or domain rules are unfamiliar or time-sensitive, research primary sources before design
 
 If the request actually contains multiple independent projects, decompose it before writing a single spec.
+
+## Requirement Inventory
+
+Before proposing a design, turn the user request into an explicit requirement ledger:
+
+- must-have outcomes — what the user explicitly asked for
+- likely implied outcomes — behavior strongly implied by existing patterns or the requested flow
+- explicit non-goals — what is out of scope for this task
+- assumptions needing proof — points that depend on code evidence, research, or later verification
+
+The ledger exists to prevent scope reduction. If a requested outcome does not appear in the eventual spec, the omission must be deliberate and explained — not accidental.
 
 ## Conversation Discipline
 
@@ -82,6 +96,7 @@ Ask one focused question at a time when possible.
 Before writing the spec:
 
 - summarize your understanding
+- challenge the framing when the request is too broad, too solution-shaped, or hiding the real user problem
 - propose 2 or 3 approaches when there is a real design choice
 - recommend one approach and explain why
 - present the design in sections scaled to the task complexity
@@ -93,6 +108,7 @@ Cover the parts that matter for implementation:
 - data flow or control flow
 - edge cases and failure handling
 - testing approach
+- UX, DX, or operational consequences when the change affects user workflows, onboarding, docs, or team tooling
 
 Do not ask for approval once the design is clear enough to write and execute safely. The original task request is the authorization to continue, unless a safety gate is triggered.
 
@@ -112,6 +128,10 @@ Use this structure:
 ## Goal
 
 ## Context
+
+## Research Notes
+
+## Requirement Ledger
 
 ## Scope
 
@@ -146,6 +166,21 @@ Use this structure:
 
 If the spec cannot explain why the ordering is safe, the design is not ready for implementation.
 
+`## Research Notes` should capture only the facts that materially affect implementation. Prefer primary sources for frameworks, libraries, protocols, and standards. Do not dump raw research notes that never influence the design.
+
+`## Requirement Ledger` should list:
+
+- must-have requirements carried from the user request
+- implied requirements inferred from existing code or workflow expectations
+- explicit non-goals
+- assumptions that later stages must prove or falsify
+
+`## Execution Strategy` should state:
+
+- workspace strategy: in-place / isolated branch / isolated worktree
+- execution mode: direct / subagent / mixed
+- why this strategy is appropriate for autonomy, context budget, and rollback clarity
+
 Keep the spec concrete. Avoid placeholders and vague statements like:
 
 - placeholder markers
@@ -159,9 +194,11 @@ Before transitioning to planning:
 
 1. scan for placeholders or vague wording
 2. check internal consistency across sections
-3. confirm the design matches the requested scope
+3. confirm the design matches the requested scope and did not silently drop any requirement from the ledger
 4. confirm the testing strategy actually covers the proposed change
-5. if the change touches request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, confirm the spec explicitly names the affected global invariants and execution order
+5. confirm the execution strategy names the workspace and autonomy strategy clearly enough for planning
+6. if the change touches request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, confirm the spec explicitly names the affected global invariants and execution order
+7. if the change is user-facing or DX-facing, confirm the spec identifies the proving walkthrough or user journey that later verification must run
 
 ## Execution Transition
 

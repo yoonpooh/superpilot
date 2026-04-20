@@ -34,6 +34,7 @@ The agent has drifted when:
 
 - files being edited are not in the current plan's file scope
 - the work no longer maps to any spec requirement
+- the requirement ledger in the spec no longer matches what the plan or diff is covering
 - "while I'm here" refactoring has started without spec authorization
 - the agent is investigating a tangent that is interesting but not blocking
 

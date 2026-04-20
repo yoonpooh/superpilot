@@ -25,7 +25,10 @@ Match verification strength to the change:
 - local logic change -> focused tests
 - contract, boundary, or persistence change -> integration tests
 - user workflow change -> E2E or strongest available alternative
+- onboarding, docs, or developer-workflow change -> fresh walkthrough from the entry point to first successful outcome
 - config, build, or CI change -> build plus smoke checks
+- schema or generated-contract change -> migration/codegen/contract checks plus runtime proof where available
+- security-sensitive change -> positive proof of intended behavior plus at least one negative-path or abuse-path check
 - skill or workflow-rule change -> loadability, consistency, and targeted text validation
 
 For request-entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session changes, verification must prove two separate claims:
@@ -43,6 +46,8 @@ If ideal coverage is unavailable, run the strongest available alternative and re
 - “build succeeds” -> run the build command and confirm exit 0
 - “bug is fixed” -> run the original repro or proving test and confirm the symptom no longer occurs
 - “regression is covered” -> show the failing-then-passing test path or equivalent evidence
+- “docs / onboarding are correct” -> follow the documented flow from the start and confirm the first meaningful success still happens
+- “schema / contract change is complete” -> prove paired artifacts (migration, codegen, fixture, docs, contract tests) are in sync
 - “task is complete” -> verify tests/build/manual checks and re-check the plan/spec coverage
 
 ## Verification Depth Levels
@@ -145,12 +150,16 @@ Those are confidence statements, not verification.
 Before final completion of an implementation task, re-read the current spec and plan and confirm:
 
 - every in-scope requirement is implemented
+- every item in the requirement ledger has a proving check or an explicit non-goal disposition
 - every critical behavior has a proving check
 - any remaining gap is explicitly called out and is genuinely non-blocking
 - the last review pass happened after the last code patch and still found zero actionable findings
 - the work was not closed merely because tests turned green again
 - state transitions, failure corrections, and boundary restores were checked where the diff changes visible or persisted state
 - if the diff touched request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, both the new behavior and the preserved global invariants were explicitly verified
+- if the diff touched schema, contracts, codegen, fixtures, or docs-coupled behavior, paired-artifact drift was explicitly checked
+- if the diff changed user-facing or developer-facing workflows, the proving walkthrough was actually run
+- if the diff was security-sensitive, at least one abuse-path or negative-path verification was run
 
 ## Final Summary
 
@@ -165,6 +174,7 @@ Use this shape by default:
 - 변경: 무엇을 바꿨는지 한 줄
 - 이유: 왜 바꿨는지 한 줄
 - 범위: 핵심 파일/영향 범위
+- 학습: 다음 유사 작업에 재사용할 패턴이 있을 때만
 - 참고: 남은 비차단 갭이 있을 때만
 ```
 
@@ -174,6 +184,7 @@ The completion summary should cover:
 - how the review loop ended
 - what changed
 - why it changed
+- what reusable learning should survive this task, when applicable
 - any remaining non-blocking gap
 
 Do not report success first and evidence second. Evidence must come first.
@@ -196,13 +207,14 @@ Before the final handoff for an implementation task:
 
 1. re-check the current spec
 2. re-check the plan
-3. confirm the review loop reached zero findings
-4. confirm a fresh final review pass after the last patch also reached zero findings
-5. run the strongest relevant verification
-6. confirm the diff matches the claimed result
-7. only then write the completion summary
+3. confirm the requirement ledger is fully accounted for
+4. confirm the review loop reached zero findings
+5. confirm a fresh final review pass after the last patch also reached zero findings
+6. run the strongest relevant verification
+7. confirm the diff matches the claimed result
+8. only then write the completion summary
 
-If step 4 is missing, do not claim the task is complete even if tests or builds are green.
+If step 5 is missing, do not claim the task is complete even if tests or builds are green.
 
 Exit marker: `## VERIFICATION PASSED`
 

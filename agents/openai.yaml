@@ -1,4 +1,4 @@
 interface:
   display_name: "Superpilot"
-  short_description: "Existing-repository workflow from design through verification"
-  default_prompt: "Handle this existing-repository task with Superpilot: collaborate on the design when needed, write a spec and plan for non-trivial implementation work, investigate root cause before fixes when debugging, execute autonomously with TDD and optional subagents, keep review findings internal unless the task is explicitly review-only, verify with evidence, and do not publish unless explicitly asked."
+  short_description: "Research-first autonomous existing-repository workflow from design through verification"
+  default_prompt: "Handle this existing-repository task with Superpilot: research before guessing when external facts matter, collaborate on the design when needed, preserve the full requirement ledger from request to verification, write a spec and plan for non-trivial implementation work, investigate root cause before fixes when debugging, choose isolated worktrees or fresh subagents when helpful, execute autonomously with TDD, keep review findings internal unless the task is explicitly review-only, verify with evidence including user-flow, drift, and security checks when relevant, and do not publish unless explicitly asked."
