@@ -174,6 +174,8 @@ If the code change requires a migration, schema update, codegen refresh, fixture
 
 ## Execution Strategy
 
+Before executing the first implementation slice, re-check the plan's execution mode. If it is `subagent` or `mixed`, dispatch the first bounded subagent task as soon as its inputs are available, then continue with non-overlapping main-agent work. Do not let a planned subagent slice silently collapse into direct execution unless a concrete blocker appears; record the blocker and update the plan notes before absorbing the work.
+
 ### Direct execution
 
 Use direct execution for tightly coupled or sequential work. Keep momentum and avoid coordination overhead.

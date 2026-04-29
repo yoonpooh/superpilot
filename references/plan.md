@@ -122,12 +122,27 @@ Do not ask the user to choose unless workspace setup itself would be destructive
 
 Decide execution mode yourself.
 
+### Delegation evaluation gate
+
+For every non-trivial plan, evaluate subagent use before finalizing task ownership. This is mandatory even when the final choice is direct execution.
+
+The plan must include:
+
+- the chosen mode: `direct`, `subagent`, or `mixed`
+- candidate slices that could run in fresh subagents
+- the ownership and file scope for each chosen subagent slice
+- what the main agent will do locally while subagents run
+- a short reason if all work remains direct
+
+Prefer `mixed` execution when at least one independent slice can run safely while the main agent continues non-overlapping work.
+
 ### Use direct execution when:
 
 - the work is sequential
 - outputs of one step feed the next
 - the same files will be edited repeatedly
 - the reasoning is tightly coupled
+- delegation overhead would exceed the parallelism benefit, and the plan records why
 
 ### Use subagents when:
 
@@ -135,6 +150,9 @@ Decide execution mode yourself.
 - write targets do not overlap
 - module boundaries are clear
 - parallel work saves real time
+- there are independent investigation questions that can be answered in parallel
+- tests or fixtures can be added in disjoint files while production work continues elsewhere
+- a bounded first-pass review can run before the main final review
 
 ### Subagent constraints
 

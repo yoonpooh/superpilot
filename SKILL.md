@@ -22,6 +22,7 @@ The default objective is zero-intervention completion:
 - research before guessing when external facts, library behavior, or domain rules affect the solution
 - preserve the full requested scope from user request -> spec -> plan -> implementation -> review -> verification
 - choose the execution topology yourself: in-place, isolated branch/worktree, direct execution, or bounded fresh subagents
+- actively evaluate bounded fresh subagents for every non-trivial task, and use them when independent work can run safely in parallel
 - prove real readiness with the strongest relevant checks, including user-flow, DX, migration, and security checks when applicable
 
 ## When to Use
@@ -119,8 +120,11 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - Use TDD for feature work, bug fixes, refactoring, and behavior changes when there is a real executable test surface.
 - Choose the execution strategy yourself. Do not ask the user to choose direct execution vs subagent execution.
 - Prefer isolated execution (clean branch or worktree) when the tree is dirty, parallel work is active, or the task is risky enough that comparison/rollback clarity matters.
+- For non-trivial work, subagent use must be an explicit planning decision, not an afterthought. The plan must say `direct`, `subagent`, or `mixed`, name any subagent candidates, and explain why direct-only execution is appropriate when no subagent is used.
+- Prefer subagent or mixed execution when there are two or more independent investigation, implementation, test, or review slices with disjoint ownership and the main agent can do useful non-overlapping work while they run.
 - Use subagents only when task independence is clear and write scopes do not overlap.
 - Use fresh subagent context per independent task unless there is a strong reason to reuse prior context.
+- If a task is large, spans multiple subsystems, or has parallelizable review/verification risk, default to looking for at least one bounded subagent slice before choosing direct-only execution.
 - Final integration, final review, and final verification always belong to the main agent.
 - Review the diff, not the untouched codebase, and keep looping until actionable findings reach zero.
 - Every review pass must run mandatory trace activities, walk through every checklist item, and answer every adversarial question against the diff. A review pass that skips any of these is not a valid pass and does not count toward the zero-findings exit condition.
