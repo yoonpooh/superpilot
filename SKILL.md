@@ -70,9 +70,9 @@ For non-trivial work, follow this path:
 2. Research external facts, library behavior, domain constraints, and prior art when uncertainty or risk is real
 3. Clarify only what is materially ambiguous
 4. Collaborate with the user on the design and pressure-test framing, scope, UX, DX, and risk
-5. Write a spec — load [references/spec.md](references/spec.md) first
-6. Write a plan — load [references/plan.md](references/plan.md) first
-7. Investigate root cause first when debugging is needed — load [references/debugging.md](references/debugging.md) first
+5. If the task involves a bug, failing test, build failure, or unexpected behavior, investigate and capture the root cause first — load [references/debugging.md](references/debugging.md) before writing the spec or plan
+6. Write a spec — load [references/spec.md](references/spec.md) first
+7. Write a plan — load [references/plan.md](references/plan.md) first, and include the proven root cause when debugging was required
 8. Load [references/implementation.md](references/implementation.md), then execute autonomously following its TDD, isolation, and execution rules
 9. **Mandatory transition**: when implementation reaches GREEN, stop and load [references/review.md](references/review.md) before any other action. GREEN tests do not authorize completion — only a zero-findings review loop does. **This transition is never exempt — not by trivial status, not by mechanical simplicity, not by test confidence.**
 10. Run harsh review-and-patch loops on the diff following the loaded review procedure, including requirement-preservation and drift checks
@@ -89,7 +89,7 @@ Each stage ends with a completion marker that confirms the stage was properly co
 |-------|-----------|---------|
 | Spec | `## SPEC COMPLETE` | Spec written, self-reviewed, path provided |
 | Plan | `## PLAN COMPLETE` | Plan written, self-reviewed, execution mode chosen |
-| Debugging | `## ROOT CAUSE CONFIRMED` | Root cause proven by evidence, captured in plan |
+| Debugging | `## ROOT CAUSE CONFIRMED` | Root cause proven by evidence, captured before spec/plan when debugging is required |
 | Implementation | `## IMPLEMENTATION GREEN` | All slices green, ready for review |
 | Review | `## REVIEW COMPLETE — 0 FINDINGS` | Zero findings on fresh final pass |
 | Verification | `## VERIFICATION PASSED` | Fresh evidence supports all claims |

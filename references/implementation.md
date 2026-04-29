@@ -224,7 +224,7 @@ When a test fails during implementation, classify it before spending time fixing
 | Category | Definition | Action |
 |----------|-----------|--------|
 | **In-branch** | Failure caused by changes in the current task | Fix immediately — this is your responsibility |
-| **Pre-existing** | Failure exists on the base branch before your changes | Do not fix unless it is in scope. Verify by checking out the base branch or using `git stash` to confirm the failure exists without your changes |
+| **Pre-existing** | Failure exists on the base branch before your changes | Do not fix unless it is in scope. Verify from a clean baseline, preferably a separate worktree or clean checkout, so user changes are not disturbed |
 | **Flaky** | Failure is non-deterministic and unrelated to your changes | Re-run once to confirm flakiness. If flaky, note it and move on. Do not spend time debugging intermittent failures outside your scope |
 
 ### Triage procedure
@@ -232,7 +232,7 @@ When a test fails during implementation, classify it before spending time fixing
 1. test fails
 2. check: does this test touch code you changed? (grep the test for your changed symbols)
 3. if yes → likely **in-branch**, investigate and fix
-4. if no → run `git stash && [test command] && git stash pop` or check base branch
+4. if no → verify against a clean baseline using a separate worktree, clean checkout, or other non-destructive method that preserves user changes
 5. if the failure reproduces without your changes → **pre-existing**, skip
 6. if the failure does not reproduce consistently → **flaky**, note and skip
 
