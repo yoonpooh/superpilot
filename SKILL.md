@@ -25,6 +25,8 @@ The default objective is zero-intervention completion:
 - actively evaluate bounded fresh subagents for every non-trivial task, and use them when independent work can run safely in parallel
 - prove real readiness with the strongest relevant checks, including user-flow, DX, migration, and security checks when applicable
 
+For non-implementation requests such as explanation, analysis, advice, critique, or explicit "do not edit/work" requests, answer only within the requested scope. Do not transition into planning or implementation unless the user explicitly asks for changes.
+
 ## When to Use
 
 Use `superpilot` when working in an existing repository and the task needs disciplined execution, such as:
@@ -99,7 +101,7 @@ When transitioning between stages, confirm the previous stage's exit marker cond
 
 For agent recovery interruptions, the current stage's marker remains unsatisfied. After recovery, resume from the incomplete stage, not the next one.
 
-Once the request is clear enough to produce a correct spec, treat the original user request as authorization to continue through planning and implementation. Do not introduce approval gates unless a safety gate triggers.
+For explicit implementation requests, once the request is clear enough to produce a correct spec, treat the original user request as authorization to continue through planning and implementation. Do not introduce approval gates unless a safety gate triggers.
 
 If the user explicitly asks for review-only output on an existing diff, branch, commit, or pull request, switch to review-only mode:
 
