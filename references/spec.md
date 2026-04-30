@@ -12,7 +12,7 @@ For non-trivial work:
 - research before guessing when external facts could change the design
 - collaborate with the user on the design
 - write the spec
-- continue into planning once the request is clear enough to describe correctly
+- for explicit implementation requests, continue into planning once the request is clear enough to describe correctly
 
 Do not implement before the spec/design is clear enough to write down concretely.
 
@@ -110,7 +110,7 @@ Cover the parts that matter for implementation:
 - testing approach
 - UX, DX, or operational consequences when the change affects user workflows, onboarding, docs, or team tooling
 
-Do not ask for approval once the design is clear enough to write and execute safely. The original task request is the authorization to continue, unless a safety gate is triggered.
+For explicit implementation requests, do not ask for approval once the design is clear enough to write and execute safely. The original task request is the authorization to continue, unless a safety gate is triggered.
 
 ## Spec File
 
