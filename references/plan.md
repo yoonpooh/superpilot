@@ -4,7 +4,7 @@
 
 Turn the current written spec into an executable implementation plan that another strong engineer could follow without guessing.
 
-Skip this stage only when the task is truly trivial under the exception defined in `SKILL.md`.
+Skip this stage when the request qualifies for Micro Task Mode as defined in `SKILL.md`.
 
 The plan is mandatory for non-trivial work.
 

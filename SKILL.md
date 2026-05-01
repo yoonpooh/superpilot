@@ -27,6 +27,10 @@ The default objective is zero-intervention completion:
 
 For non-implementation requests such as explanation, analysis, advice, critique, or explicit "do not edit/work" requests, answer only within the requested scope. Do not transition into planning or implementation unless the user explicitly asks for changes.
 
+Before entering the full workflow, classify the request. Low-risk, tightly scoped tasks where the requested change is explicit, localized, and does not require design judgment use Micro Task Mode instead of the full workflow.
+
+Before writing a spec for the full workflow, confirm the requirements. Every must-have requirement must be either explicitly confirmed by the user or directly proven by repository evidence. Do not start the spec from inferred, likely, or assumed user requirements.
+
 ## When to Use
 
 Use `superpilot` when working in an existing repository and the task needs disciplined execution, such as:
@@ -67,22 +71,22 @@ Do not use `superpilot` for:
 
 ## Workflow
 
-For non-trivial work, follow this path:
+For non-trivial work that does not qualify for Micro Task Mode, follow this path:
 
 1. Explore repository context, local guardrails, current baseline, and whether isolated execution is needed
 2. Research external facts, library behavior, domain constraints, and prior art when uncertainty or risk is real
-3. Clarify only what is materially ambiguous
+3. Clarify requirements until every must-have requirement is confirmed or code-proven
 4. Collaborate with the user on the design and pressure-test framing, scope, UX, DX, and risk
 5. If the task involves a bug, failing test, build failure, or unexpected behavior, investigate and capture the root cause first — load [references/debugging.md](references/debugging.md) before writing the spec or plan
 6. Write a spec — load [references/spec.md](references/spec.md) first
 7. Write a plan — load [references/plan.md](references/plan.md) first, and include the proven root cause when debugging was required
 8. Load [references/implementation.md](references/implementation.md), then execute autonomously following its TDD, isolation, and execution rules
-9. **Mandatory transition**: when implementation reaches GREEN, stop and load [references/review.md](references/review.md) before any other action. GREEN tests do not authorize completion — only a zero-findings review loop does. **This transition is never exempt — not by trivial status, not by mechanical simplicity, not by test confidence.**
+9. **Mandatory transition**: when implementation reaches GREEN, stop and load [references/review.md](references/review.md) before any other action. GREEN tests do not authorize completion — only a zero-findings review loop does. **Within the full workflow, this transition is never exempt — not by mechanical simplicity, not by test confidence.**
 10. Run harsh review-and-patch loops on the diff following the loaded review procedure, including requirement-preservation and drift checks
 11. Verify with fresh evidence — load [references/verification.md](references/verification.md) first
 12. Deliver a completion summary and capture reusable learnings when they materially reduce future rework
 
-Each stage must Read the linked reference file before starting work. Skipping a reference load is not allowed — the reference defines how to execute the stage, not just what the stage is about.
+Each full-workflow stage must read the linked reference file before starting work. Skipping a reference load is not allowed in the full workflow — the reference defines how to execute the stage, not just what the stage is about.
 
 ### Stage transition markers
 
@@ -101,7 +105,7 @@ When transitioning between stages, confirm the previous stage's exit marker cond
 
 For agent recovery interruptions, the current stage's marker remains unsatisfied. After recovery, resume from the incomplete stage, not the next one.
 
-For explicit implementation requests, once the request is clear enough to produce a correct spec, treat the original user request as authorization to continue through planning and implementation. Do not introduce approval gates unless a safety gate triggers.
+For explicit implementation requests, once the requirements are confirmed or code-proven and the request is clear enough to produce a correct spec, treat the original user request as authorization to continue through planning and implementation. Do not introduce approval gates unless a safety gate triggers.
 
 If the user explicitly asks for review-only output on an existing diff, branch, commit, or pull request, switch to review-only mode:
 
@@ -114,7 +118,9 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 
 - Treat repository-local agent instruction files such as `AGENTS.md` and `CLAUDE.md` as strong local rule sets.
 - Optimize for zero-intervention completion. Ask the user only when proceeding would materially risk building the wrong thing or doing something unsafe.
+- Micro Task Mode is an explicit exception to the full workflow's spec, plan, TDD, subagent-evaluation, stage-reference, and review-loop requirements.
 - For non-trivial work, always produce both a spec and a plan.
+- Do not write a full-workflow spec while any must-have requirement remains inferred, likely, or assumed. Ask a concrete question first.
 - Review-only requests are an explicit exception to the spec-and-plan rule.
 - Research before deciding when external APIs, third-party libraries, current product facts, or domain rules could change the correct implementation.
 - Maintain a requirement ledger from the original request through final verification. Do not silently reduce scope, drop requested outcomes, or “simplify” by omission.
@@ -145,43 +151,59 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - Do not do speculative refactoring or unrelated cleanup.
 - Do not commit, push, or publish unless the user explicitly asks.
 
-## Trivial Exception
+## Micro Task Mode
 
-Only truly trivial work may skip the spec and plan. A task is trivial only when **all four** of these are true:
+Use Micro Task Mode for low-risk, tightly scoped tasks where the requested change is explicit, localized, and does not require design judgment.
 
-- single-line or few-character change
-- zero ambiguity about what to change
-- zero side-effect risk
-- no design decision involved
+Micro Task Mode applies only when all of these are true:
+
+- the requested outcome is unambiguous
+- the change is localized to a small, known area
+- there is no meaningful product, architecture, security, data, migration, or API contract decision
+- no new behavior needs to be designed
+- no root-cause investigation is needed
+- the likely verification path is a simple diff review, syntax check, targeted test, or smoke check
 
 ### Quantitative guard
 
-If **any** of these is true, the task is **not trivial** regardless of how mechanically simple each individual change looks:
+File count alone does not decide Micro Task Mode. Scope and risk decide it.
 
-- 2+ files changed
-- 3+ change sites (hunks)
-- an existing test would break from the change
+If any of these is true, the task is not a micro task regardless of how mechanically simple the edit looks:
+
+- the change spans multiple subsystems
+- the change modifies public behavior, access control, persistence, schema, migrations, external API contracts, or release/deploy flow
+- the request requires debugging, root-cause analysis, design choice, or product interpretation
+- a new or updated test is needed to define or prove the intended behavior
+- verification cannot be reduced to a small, relevant check
 
 ### Anti-rationalization patterns
 
-These are **not** valid arguments for trivial classification:
+These are not valid arguments for Micro Task Mode:
 
-- "same pattern repeated across files → effectively single-line" — the rule measures **change scope** (file count, site count), not pattern complexity
-- "mechanical / search-and-replace change → trivial" — mechanical changes across multiple files have higher miss risk, not lower
-- "display-only / formatting change → zero side-effect" — if a test asserts the old format, side-effect risk is nonzero
-- "simple change, so process cost exceeds risk" — simple changes are cheap to review; skipping is where the real cost hides
+- "mechanical / search-and-replace change" — repeated edits can still create broad miss risk
+- "display-only / formatting change" — if tests, layout, translations, or downstream consumers depend on it, risk is nonzero
+- "small code diff" — a small diff can still affect auth, data, contracts, routing, or global invariants
+- "the user said it is simple" — use the user's scope signal, but verify the actual risk surface
 
-### What trivial skips and what it does not
+### Micro Task execution
 
-Trivial work may skip the **spec and plan** only. It must still respect:
+In Micro Task Mode:
 
-- TDD — if a test surface exists (including existing tests that would break), TDD applies
-- review loop — the mandatory transition from GREEN to review is **never** skipped by trivial status
+- skip spec, plan, TDD, subagent evaluation, stage transition markers, and stage reference loads
+- make the smallest direct change that satisfies the request
+- review the diff for unintended edits
+- run only the smallest relevant verification
+- report what changed and how it was checked
+
+Micro Task Mode must still respect:
+
 - local guardrails (AGENTS.md, CLAUDE.md)
-- verification
 - scope discipline
+- destructive-action confirmation requirements
 
-**The trivial exception is narrow by design.** When in doubt, classify as non-trivial. The cost of running an unnecessary review loop is minutes; the cost of shipping an unreviewed multi-file change is a bug.
+If new ambiguity, risk, behavior design, or a larger verification surface appears while executing a micro task, stop using Micro Task Mode and reclassify before continuing.
+
+When in doubt, classify by the actual risk surface, not by edit size.
 
 ## Storage
 

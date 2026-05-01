@@ -4,15 +4,16 @@
 
 Use this stage to turn an initial request into a clear design and written spec before planning or implementation starts.
 
-Skip this stage only when the task is truly trivial under the exception defined in `SKILL.md`.
+Skip this stage when the request qualifies for Micro Task Mode as defined in `SKILL.md`.
 
 For non-trivial work:
 
 - explore context first
 - research before guessing when external facts could change the design
+- confirm every must-have requirement before writing the spec
 - collaborate with the user on the design
 - write the spec
-- for explicit implementation requests, continue into planning once the request is clear enough to describe correctly
+- for explicit implementation requests, continue into planning once the requirements are confirmed or code-proven and the request is clear enough to describe correctly
 
 Do not implement before the spec/design is clear enough to write down concretely.
 
@@ -34,11 +35,29 @@ If the request actually contains multiple independent projects, decompose it bef
 Before proposing a design, turn the user request into an explicit requirement ledger:
 
 - must-have outcomes — what the user explicitly asked for
-- likely implied outcomes — behavior strongly implied by existing patterns or the requested flow
+- likely implied outcomes — candidate requirements strongly implied by existing patterns or the requested flow; confirm or prove before promoting them to must-have
 - explicit non-goals — what is out of scope for this task
 - assumptions needing proof — points that depend on code evidence, research, or later verification
 
 The ledger exists to prevent scope reduction. If a requested outcome does not appear in the eventual spec, the omission must be deliberate and explained — not accidental.
+
+## Requirement Confirmation Gate
+
+Before writing the spec, every must-have requirement must be in one of these states:
+
+- **User-confirmed** — the user explicitly stated or confirmed it
+- **Code-proven** — repository code, tests, config, docs, or the current diff directly proves it
+
+Do not treat these as confirmed requirements:
+
+- likely inferences from existing patterns
+- assumptions about user intent
+- conventional behavior that the user did not ask for
+- implementation preferences that are reasonable but not required
+
+If any must-have requirement is still inferred, likely, or assumed, ask a concrete question before writing the spec.
+
+This gate applies only to requirements: the required outcome, user intent, hard constraints, and must-preserve behavior. It does not require user confirmation for implementation approach, file structure, test strategy, workspace strategy, or non-goals unless they change or define a must-have requirement.
 
 ## Conversation Discipline
 
@@ -52,6 +71,8 @@ The ledger exists to prevent scope reduction. If a requested outcome does not ap
 
 Ask clarifying questions only when they prevent building the wrong thing.
 
+For requirements, do not rely on passive correction. If a must-have requirement depends on user intent and is not explicit or code-proven, ask before writing the spec.
+
 ### Assumptions-first approach
 
 Instead of asking open-ended questions, analyze the codebase first and present structured assumptions for the user to correct:
@@ -62,7 +83,7 @@ Instead of asking open-ended questions, analyze the codebase first and present s
    - **Confident** — evidence from code makes this clear (e.g., "DB uses PostgreSQL based on schema.prisma")
    - **Likely** — reasonable inference from patterns (e.g., "auth follows the same middleware pattern as existing routes")
    - **Unclear** — multiple valid directions, need user input (e.g., "should deleted items be soft-deleted or hard-deleted?")
-4. the user corrects only what is wrong — no need to confirm what is obviously right
+4. the user corrects only what is wrong for context and design assumptions — requirement assumptions still must pass the Requirement Confirmation Gate
 
 This reduces question count and shows the user you already understand their codebase.
 
@@ -72,11 +93,13 @@ Use direct questions when:
 
 - no existing code provides evidence for the assumption
 - the decision is purely about product intent, not technical implementation
+- a must-have requirement is inferred rather than user-confirmed or code-proven
 - conflicting patterns exist in the codebase and both are reasonable
 
 ### Good clarifications
 
 - missing behavior definition
+- unconfirmed must-have requirement
 - unclear scope boundaries
 - conflicting requirements
 - undefined success criteria
@@ -96,6 +119,7 @@ Ask one focused question at a time when possible.
 Before writing the spec:
 
 - summarize your understanding
+- confirm every must-have requirement is user-confirmed or code-proven
 - challenge the framing when the request is too broad, too solution-shaped, or hiding the real user problem
 - propose 2 or 3 approaches when there is a real design choice
 - recommend one approach and explain why
@@ -195,10 +219,11 @@ Before transitioning to planning:
 1. scan for placeholders or vague wording
 2. check internal consistency across sections
 3. confirm the design matches the requested scope and did not silently drop any requirement from the ledger
-4. confirm the testing strategy actually covers the proposed change
-5. confirm the execution strategy names the workspace and autonomy strategy clearly enough for planning
-6. if the change touches request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, confirm the spec explicitly names the affected global invariants and execution order
-7. if the change is user-facing or DX-facing, confirm the spec identifies the proving walkthrough or user journey that later verification must run
+4. confirm every must-have requirement in the spec is user-confirmed or code-proven, with no likely/inferred requirement promoted into the spec
+5. confirm the testing strategy actually covers the proposed change
+6. confirm the execution strategy names the workspace and autonomy strategy clearly enough for planning
+7. if the change touches request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, confirm the spec explicitly names the affected global invariants and execution order
+8. if the change is user-facing or DX-facing, confirm the spec identifies the proving walkthrough or user journey that later verification must run
 
 ## Execution Transition
 

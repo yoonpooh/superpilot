@@ -36,7 +36,7 @@ The design target is zero-intervention completion: the agent should research whe
 | **Review** | Harsh diff-based review loops with stall detection (3 consecutive non-decreasing findings trigger escalation). Requirement-preservation, schema/contract drift, threat-model, UX, and DevEx lenses can all become findings. Optional parallel specialist reviews (Security, Performance, API Contract, Data Consistency, Test Coverage, UX/Design, DevEx) supplement the main review loop. Every patch requires a fresh re-review |
 | **Verify** | 4-level verification (Exists → Substantive → Wired → Functional) with stub detection. User-flow, onboarding/DX, migration/codegen, and abuse-path checks are required when relevant. No "should work now" claims allowed |
 
-For explicit implementation requests, the original user request is treated as authorization to continue once the spec is clear enough to write correctly. The agent stops only for real safety gates.
+For explicit implementation requests, the original user request is treated as authorization to continue once must-have requirements are user-confirmed or code-proven and the spec is clear enough to write correctly. The agent stops only for real safety gates.
 
 ## Key Principles
 
@@ -44,6 +44,8 @@ For explicit implementation requests, the original user request is treated as au
 - **Zero-intervention by default** — routine execution does not wait for approval; the agent keeps moving unless a real safety gate or material ambiguity appears
 - **Research before guessing** — primary-source lookup is part of the workflow when external facts or library behavior matter
 - **Spec and plan first** — non-trivial work always gets a written spec and implementation plan
+- **Micro Task Mode** — low-risk, tightly scoped tasks skip the full workflow and use the smallest direct edit plus the smallest relevant check
+- **Confirmed requirements first** — full workflow specs start only after must-have requirements are user-confirmed or code-proven
 - **Requirement-ledger discipline** — requested outcomes are tracked from user request through verification so scope cannot quietly shrink
 - **TDD by default** — no production code without a failing test first (when a test surface exists)
 - **Harsh review** — review the diff, not the codebase; for implementation work, absorb and patch findings inside the loop until zero actionable findings remain
@@ -82,7 +84,7 @@ superpilot/
 
 ### File Roles
 
-- **`SKILL.md`** — The main contract. Defines when to use Superpilot, the full workflow, hard rules, trivial exceptions, storage paths, and safety gates.
+- **`SKILL.md`** — The main contract. Defines when to use Superpilot, Micro Task Mode, the full workflow, hard rules, storage paths, and safety gates.
 - **`references/`** — Stage-specific guides. Each file covers how to execute one stage of the workflow in detail. Includes agent self-recovery for handling agent-level failures.
 - **`agents/openai.yaml`** — Agent interface for OpenAI Codex integration.
 
@@ -123,9 +125,11 @@ Add a rule to your agent instruction file to make Superpilot the default workflo
 # AGENTS.md or CLAUDE.md
 
 - For non-trivial work in existing repositories, use the `superpilot` skill first.
+- For low-risk, tightly scoped tasks, use Micro Task Mode instead of the full workflow.
+- Before writing a full-workflow spec, confirm every must-have requirement or prove it from repository evidence.
 - Let `superpilot` own research, spec, plan, TDD, review, and verification flow.
 - Let `superpilot` preserve requirement coverage and choose isolated worktrees or subagents when autonomy benefits from them.
-- For explicit implementation requests, once the work is clear enough for a correct spec, treat the original request
+- For explicit implementation requests, once must-have requirements are confirmed or proven and the work is clear enough for a correct spec, treat the original request
   as authorization to continue unless a safety gate is triggered.
 ```
 
