@@ -44,7 +44,7 @@ For explicit implementation requests, the original user request is treated as au
 - **Zero-intervention by default** — routine execution does not wait for approval; the agent keeps moving unless a real safety gate or material ambiguity appears
 - **Research before guessing** — primary-source lookup is part of the workflow when external facts or library behavior matter
 - **Spec and plan first** — non-trivial work always gets a written spec and implementation plan
-- **Micro Task Mode** — low-risk, tightly scoped tasks skip the full workflow and use the smallest direct edit plus the smallest relevant check
+- **Micro Task Mode** — low-risk, tightly scoped tasks skip spec/plan/TDD but still run a scoped review loop before the smallest relevant check
 - **Confirmed requirements first** — full workflow specs start only after must-have requirements are user-confirmed or code-proven
 - **Requirement-ledger discipline** — requested outcomes are tracked from user request through verification so scope cannot quietly shrink
 - **TDD by default** — no production code without a failing test first (when a test surface exists)
@@ -125,7 +125,7 @@ Add a rule to your agent instruction file to make Superpilot the default workflo
 # AGENTS.md or CLAUDE.md
 
 - For non-trivial work in existing repositories, use the `superpilot` skill first.
-- For low-risk, tightly scoped tasks, use Micro Task Mode instead of the full workflow.
+- For low-risk, tightly scoped tasks, use Micro Task Mode instead of the full workflow, but still run its scoped review loop before completion.
 - Before writing a full-workflow spec, confirm every must-have requirement or prove it from repository evidence.
 - Let `superpilot` own research, spec, plan, TDD, review, and verification flow.
 - Let `superpilot` preserve requirement coverage and choose isolated worktrees or subagents when autonomy benefits from them.

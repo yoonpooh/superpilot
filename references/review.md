@@ -23,7 +23,7 @@ If the task itself is review-only, this stage becomes the primary deliverable:
 - if a new file is part of the work, either read it directly during review or stage it before the final whole-diff review pass
 - review the changed lines first, then read as far beyond the immediate calling context as needed to complete the mandatory traces and contract checks correctly
 - do not pad the review with unrelated unchanged code
-- compare the diff against the spec requirement ledger so missing requested behavior is visible during review, not after handoff
+- compare the diff against the spec requirement ledger, or against the original user request and local guardrails in Micro Task Mode, so missing requested behavior is visible during review, not after handoff
 
 ## Mandatory Trace Activities
 
@@ -91,7 +91,7 @@ If a trace activity does not apply to the current diff (e.g., no external calls,
 
 ### 7. Requirement-coverage trace
 
-For the current diff, trace each item in the spec requirement ledger:
+For the current diff, trace each item in the spec requirement ledger. In Micro Task Mode, use the original user request and local guardrails as the requirement source:
 
 - identify where the requirement is implemented, verified, or intentionally deferred
 - if a requested or implied requirement has no matching code, test, or explicit non-goal, that is a finding
@@ -129,7 +129,7 @@ For implementation tasks, repeat this loop:
 
 1. capture the current diff
 2. read every changed hunk
-3. **spec compliance pass** — verify every changed behavior matches the current spec. Does the implementation do what was specified, not just "work"? If spec says X and code does Y, that is a finding even if Y is reasonable
+3. **spec compliance pass** — verify every changed behavior matches the current spec, or the original user request and local guardrails in Micro Task Mode. Does the implementation do what was specified, not just "work"? If the requirement source says X and code does Y, that is a finding even if Y is reasonable
 4. **code quality pass** — run mandatory trace activities, walk through every checklist item, answer every adversarial question. Do not start this pass until spec compliance and requirement coverage are confirmed
 5. collect actionable findings from both passes
 6. if findings > 0: patch them, then go back to step 1 — **do not exit here**
@@ -241,8 +241,8 @@ For each item, identify the relevant changed code and state what you checked:
 - performance or resource blowups — can this path be called in an unbounded loop or without rate limiting?
 - security and sensitive-data exposure — are secrets, PII, or internal details leaked in logs, responses, or error messages?
 - test coverage for the most plausible failure mode — is there a test for the first thing that would break?
-- actual alignment with the current spec — for implementation tasks, does the implementation match what was specified, not just "work"?
-- requirement ledger coverage — did any requested or implied outcome disappear between request, spec, plan, and diff?
+- actual alignment with the current spec or Micro Task request — for implementation tasks, does the implementation match what was specified, not just "work"?
+- requirement ledger coverage — did any requested or implied outcome disappear between request, spec, plan, and diff? In Micro Task Mode, compare the request directly to the diff.
 - actual alignment with the requested review target — for review-only tasks with no spec, does the finding reflect the stated scope and artifact under review?
 - operability and debuggability — can you diagnose a production failure from logs alone?
 - partial failure behavior — if this operation half-succeeds, what state is left behind?

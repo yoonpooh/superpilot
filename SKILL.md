@@ -118,7 +118,7 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 
 - Treat repository-local agent instruction files such as `AGENTS.md` and `CLAUDE.md` as strong local rule sets.
 - Optimize for zero-intervention completion. Ask the user only when proceeding would materially risk building the wrong thing or doing something unsafe.
-- Micro Task Mode is an explicit exception to the full workflow's spec, plan, TDD, subagent-evaluation, stage-reference, and review-loop requirements.
+- Micro Task Mode is an explicit exception to the full workflow's spec, plan, TDD, subagent-evaluation, non-review stage-reference, and stage-transition-marker requirements.
 - For non-trivial work, always produce both a spec and a plan.
 - Do not write a full-workflow spec while any must-have requirement remains inferred, likely, or assumed. Ask a concrete question first.
 - Review-only requests are an explicit exception to the spec-and-plan rule.
@@ -189,11 +189,12 @@ These are not valid arguments for Micro Task Mode:
 
 In Micro Task Mode:
 
-- skip spec, plan, TDD, subagent evaluation, stage transition markers, and stage reference loads
+- skip spec, plan, TDD, subagent evaluation, non-review stage reference loads, and stage transition markers
 - make the smallest direct change that satisfies the request
-- review the diff for unintended edits
+- load [references/review.md](references/review.md) after the direct change
+- run a scoped review-and-patch loop against the diff until actionable findings reach zero, including a fresh final pass after the last patch
 - run only the smallest relevant verification
-- report what changed and how it was checked
+- report what changed, how the review loop ended, and how it was checked
 
 Micro Task Mode must still respect:
 
