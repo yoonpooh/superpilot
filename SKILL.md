@@ -1,13 +1,13 @@
 ---
 name: superpilot
-description: "Use when handling non-trivial work in an existing repository, or when performing a review-only audit of an existing diff, branch, commit, or pull request."
+description: "Use only when the user explicitly asks to use superpilot for repository work or review."
 ---
 
 # Superpilot
 
 ## Mission
 
-Use this skill for non-trivial work in an existing repository when the job should move from collaborative design into autonomous implementation without depending on any external workflow skill pack.
+Use this skill only when the user explicitly asks to use `superpilot` for repository work and the job should move from collaborative design into autonomous implementation without depending on any external workflow skill pack.
 
 This skill is self-contained:
 
@@ -27,13 +27,13 @@ The default objective is zero-intervention completion:
 
 For non-implementation requests such as explanation, analysis, advice, critique, or explicit "do not edit/work" requests, answer only within the requested scope. Do not transition into planning or implementation unless the user explicitly asks for changes.
 
-Before entering the full workflow, classify the request. Low-risk, tightly scoped tasks where the requested change is explicit, localized, and does not require design judgment use Micro Task Mode instead of the full workflow.
+Before entering the full workflow, confirm that the user explicitly invoked `superpilot`, then classify the request. Low-risk, tightly scoped tasks where the requested change is explicit, localized, and does not require design judgment use Micro Task Mode instead of the full workflow.
 
 Before writing a spec for the full workflow, confirm the requirements. Every must-have requirement must be either explicitly confirmed by the user or directly proven by repository evidence. Do not start the spec from inferred, likely, or assumed user requirements.
 
 ## When to Use
 
-Use `superpilot` when working in an existing repository and the task needs disciplined execution, such as:
+Use `superpilot` only when the user explicitly asks to use `superpilot` and the repository task needs disciplined execution, such as:
 
 - bug fixes
 - feature work
@@ -44,6 +44,7 @@ Use `superpilot` when working in an existing repository and the task needs disci
 
 ```dot
 digraph superpilot_when {
+    "User explicitly invoked superpilot?" [shape=diamond];
     "Existing repository task?" [shape=diamond];
     "Review-only request on existing diff/branch/commit/PR?" [shape=diamond];
     "Non-trivial implementation or bugfix?" [shape=diamond];
@@ -51,6 +52,8 @@ digraph superpilot_when {
     "Use superpilot\n(full workflow)" [shape=box];
     "Do not use superpilot" [shape=box];
 
+    "User explicitly invoked superpilot?" -> "Existing repository task?" [label="yes"];
+    "User explicitly invoked superpilot?" -> "Do not use superpilot" [label="no"];
     "Existing repository task?" -> "Review-only request on existing diff/branch/commit/PR?" [label="yes"];
     "Existing repository task?" -> "Do not use superpilot" [label="no"];
     "Review-only request on existing diff/branch/commit/PR?" -> "Use superpilot\n(review-only mode)" [label="yes"];
@@ -64,6 +67,7 @@ digraph superpilot_when {
 
 Do not use `superpilot` for:
 
+- tasks where the user did not explicitly ask to use `superpilot`
 - greenfield project creation
 - simple factual questions or code explanation with no change requested
 - release or deployment orchestration by default
@@ -117,6 +121,7 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 ## Hard Rules
 
 - Treat repository-local agent instruction files such as `AGENTS.md` and `CLAUDE.md` as strong local rule sets.
+- Do not infer `superpilot` usage from repository context, task size, or complexity. The user must explicitly ask to use it.
 - Optimize for zero-intervention completion. Ask the user only when proceeding would materially risk building the wrong thing or doing something unsafe.
 - Micro Task Mode is an explicit exception to the full workflow's spec, plan, TDD, subagent-evaluation, non-review stage-reference, and stage-transition-marker requirements.
 - For non-trivial work, always produce both a spec and a plan.
