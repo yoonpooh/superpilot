@@ -14,6 +14,7 @@ Before editing production code, confirm the execution environment is appropriate
 2. if not, decide whether isolated branch or worktree execution is needed
 3. identify the proving command(s) that define a clean baseline for this task
 4. if the task is large or parallelizable, decide which slices should move to fresh subagents
+5. if the plan chose `subagent` or `mixed`, confirm subagent tooling is available or run the available tool-discovery mechanism once before falling back to direct execution
 
 For risky work, do not drift into implementation without an explicit workspace and baseline decision. Clean diff capture is part of quality, not a convenience.
 
@@ -174,7 +175,21 @@ If the code change requires a migration, schema update, codegen refresh, fixture
 
 ## Execution Strategy
 
-Before executing the first implementation slice, re-check the plan's execution mode. If it is `subagent` or `mixed`, dispatch the first bounded subagent task as soon as its inputs are available, then continue with non-overlapping main-agent work. Do not let a planned subagent slice silently collapse into direct execution unless a concrete blocker appears; record the blocker and update the plan notes before absorbing the work.
+Before executing the first implementation slice, re-check the plan's execution mode. For every non-micro implementation task, at least one fresh subagent must be dispatched unless no subagent tool is available after discovery or no bounded independent slice exists. If it is `subagent` or `mixed`, dispatch the first bounded subagent task as soon as its inputs are available, then continue with non-overlapping main-agent work. Do not let a planned subagent slice silently collapse into direct execution unless a concrete blocker appears; record the blocker and update the plan notes before absorbing the work.
+
+If no subagent tool is loaded, attempt tool discovery once before deciding dispatch is impossible. If discovery fails or no suitable tool exists, record that environment fact separately from task suitability.
+
+If implementation delegation is unsafe because write scopes overlap, dispatch a bounded investigation, test-design, or first-pass review subagent instead when that can run without interfering with the main implementation. Direct-only execution for a non-micro task is allowed only when both implementation delegation and non-writing delegation are unsuitable or unavailable.
+
+### E2E execution
+
+When the plan calls for E2E, keep it disposable and isolated:
+
+- use SQLite for any E2E persistence by default
+- create, migrate, seed, and reset the SQLite database as part of the E2E setup
+- identify the database target before running the test
+- never run E2E against production, shared staging, or the developer's normal database unless the user explicitly authorized that exact target
+- if SQLite cannot cover the behavior faithfully, stop and record the gap before choosing a safe alternative check
 
 ### Direct execution
 

@@ -40,6 +40,10 @@ Do not treat proof of the first claim as proof of the second.
 
 If ideal coverage is unavailable, run the strongest available alternative and report the gap briefly.
 
+For user-facing flows, auth/session changes, routing, form submission, CRUD, checkout/payment, editor workflows, onboarding, or cross-page state changes, verification must state whether E2E was the strongest practical check. If E2E was warranted but not run, report why and run the closest safe executable alternative.
+
+For E2E tests that touch persistence, verification is invalid unless the database target is identified and confirmed isolated. Default valid target: a disposable SQLite database that the test setup creates, migrates, seeds, and resets. Production, shared staging, and the developer's normal database are invalid E2E targets unless the user explicitly authorized that exact target.
+
 ## Common Claim Mapping
 
 - “tests pass” -> run the actual test command and confirm zero failures
@@ -159,6 +163,7 @@ Before final completion of an implementation task, re-read the current spec and 
 - if the diff touched request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, both the new behavior and the preserved global invariants were explicitly verified
 - if the diff touched schema, contracts, codegen, fixtures, or docs-coupled behavior, paired-artifact drift was explicitly checked
 - if the diff changed user-facing or developer-facing workflows, the proving walkthrough was actually run
+- if E2E was warranted, it was run against an isolated SQLite-backed test environment or the gap and safe alternative were documented
 - if the diff was security-sensitive, at least one abuse-path or negative-path verification was run
 
 ## Final Summary

@@ -1,13 +1,13 @@
 ---
 name: superpilot
-description: "Use only when the user explicitly asks to use superpilot for repository work or review."
+description: "Use for non-trivial existing-repository implementation, debugging, refactoring, test, workflow, or review tasks that need disciplined planning, execution, review, and verification."
 ---
 
 # Superpilot
 
 ## Mission
 
-Use this skill only when the user explicitly asks to use `superpilot` for repository work and the job should move from collaborative design into autonomous implementation without depending on any external workflow skill pack.
+Use this skill for existing-repository work that should move from collaborative design into autonomous implementation without depending on any external workflow skill pack.
 
 This skill is self-contained:
 
@@ -24,16 +24,17 @@ The default objective is zero-intervention completion:
 - choose the execution topology yourself: in-place, isolated branch/worktree, direct execution, or bounded fresh subagents
 - actively evaluate bounded fresh subagents for every non-trivial task, and use them when independent work can run safely in parallel
 - prove real readiness with the strongest relevant checks, including user-flow, DX, migration, and security checks when applicable
+- for user-facing integrated behavior, explicitly evaluate whether E2E is the strongest relevant check; when E2E touches persistence, use an isolated SQLite test database unless the user explicitly authorizes another disposable target
 
 For non-implementation requests such as explanation, analysis, advice, critique, or explicit "do not edit/work" requests, answer only within the requested scope. Do not transition into planning or implementation unless the user explicitly asks for changes.
 
-Before entering the full workflow, confirm that the user explicitly invoked `superpilot`, then classify the request. Low-risk, tightly scoped tasks where the requested change is explicit, localized, and does not require design judgment use Micro Task Mode instead of the full workflow.
+Before entering the full workflow, classify the request. Low-risk, tightly scoped tasks where the requested change is explicit, localized, and does not require design judgment use Micro Task Mode instead of the full workflow.
 
 Before writing a spec for the full workflow, confirm the requirements. Every must-have requirement must be either explicitly confirmed by the user or directly proven by repository evidence. Do not start the spec from inferred, likely, or assumed user requirements.
 
 ## When to Use
 
-Use `superpilot` only when the user explicitly asks to use `superpilot` and the repository task needs disciplined execution, such as:
+Use `superpilot` when an existing-repository task needs disciplined execution, such as:
 
 - bug fixes
 - feature work
@@ -44,22 +45,20 @@ Use `superpilot` only when the user explicitly asks to use `superpilot` and the 
 
 ```dot
 digraph superpilot_when {
-    "User explicitly invoked superpilot?" [shape=diamond];
     "Existing repository task?" [shape=diamond];
     "Review-only request on existing diff/branch/commit/PR?" [shape=diamond];
     "Non-trivial implementation or bugfix?" [shape=diamond];
     "Use superpilot\n(review-only mode)" [shape=box];
     "Use superpilot\n(full workflow)" [shape=box];
+    "Use Micro Task Mode\nwhen low-risk and tightly scoped" [shape=box];
     "Do not use superpilot" [shape=box];
 
-    "User explicitly invoked superpilot?" -> "Existing repository task?" [label="yes"];
-    "User explicitly invoked superpilot?" -> "Do not use superpilot" [label="no"];
     "Existing repository task?" -> "Review-only request on existing diff/branch/commit/PR?" [label="yes"];
     "Existing repository task?" -> "Do not use superpilot" [label="no"];
     "Review-only request on existing diff/branch/commit/PR?" -> "Use superpilot\n(review-only mode)" [label="yes"];
     "Review-only request on existing diff/branch/commit/PR?" -> "Non-trivial implementation or bugfix?" [label="no"];
     "Non-trivial implementation or bugfix?" -> "Use superpilot\n(full workflow)" [label="yes"];
-    "Non-trivial implementation or bugfix?" -> "Do not use superpilot" [label="no"];
+    "Non-trivial implementation or bugfix?" -> "Use Micro Task Mode\nwhen low-risk and tightly scoped" [label="no"];
 }
 ```
 
@@ -67,7 +66,6 @@ digraph superpilot_when {
 
 Do not use `superpilot` for:
 
-- tasks where the user did not explicitly ask to use `superpilot`
 - greenfield project creation
 - simple factual questions or code explanation with no change requested
 - release or deployment orchestration by default
@@ -121,7 +119,7 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 ## Hard Rules
 
 - Treat repository-local agent instruction files such as `AGENTS.md` and `CLAUDE.md` as strong local rule sets.
-- Do not infer `superpilot` usage from repository context, task size, or complexity. The user must explicitly ask to use it.
+- Use Micro Task Mode rather than the full workflow when an existing-repository task is low-risk, tightly scoped, and explicit.
 - Optimize for zero-intervention completion. Ask the user only when proceeding would materially risk building the wrong thing or doing something unsafe.
 - Micro Task Mode is an explicit exception to the full workflow's spec, plan, TDD, subagent-evaluation, non-review stage-reference, and stage-transition-marker requirements.
 - For non-trivial work, always produce both a spec and a plan.
@@ -134,10 +132,15 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - Choose the execution strategy yourself. Do not ask the user to choose direct execution vs subagent execution.
 - Prefer isolated execution (clean branch or worktree) when the tree is dirty, parallel work is active, or the task is risky enough that comparison/rollback clarity matters.
 - For non-trivial work, subagent use must be an explicit planning decision, not an afterthought. The plan must say `direct`, `subagent`, or `mixed`, name any subagent candidates, and explain why direct-only execution is appropriate when no subagent is used.
+- Subagent evaluation is not satisfied by writing “direct” from habit. For every non-trivial task, first identify at least one possible bounded delegation slice or state the concrete reason no such slice exists.
+- If subagent tools are not currently visible, use the available tool-discovery mechanism once before concluding subagents are unavailable. A missing loaded tool is not the same thing as an unsuitable task.
+- For every non-micro implementation task, dispatch at least one fresh subagent unless no subagent tool is available after discovery or no bounded independent slice exists.
+- If implementation delegation is unsafe because write scopes would overlap, dispatch a bounded investigation, test-design, or first-pass review subagent instead.
 - Prefer subagent or mixed execution when there are two or more independent investigation, implementation, test, or review slices with disjoint ownership and the main agent can do useful non-overlapping work while they run.
 - Use subagents only when task independence is clear and write scopes do not overlap.
 - Use fresh subagent context per independent task unless there is a strong reason to reuse prior context.
 - If a task is large, spans multiple subsystems, or has parallelizable review/verification risk, default to looking for at least one bounded subagent slice before choosing direct-only execution.
+- If the plan chooses `subagent` or `mixed`, dispatch the first ready subagent slice before starting overlapping main-agent work. Do not let a planned subagent silently collapse into direct execution.
 - Final integration, final review, and final verification always belong to the main agent.
 - Review the diff, not the untouched codebase, and keep looping until actionable findings reach zero.
 - Every review pass must run mandatory trace activities, walk through every checklist item, and answer every adversarial question against the diff. A review pass that skips any of these is not a valid pass and does not count toward the zero-findings exit condition.
@@ -145,6 +148,8 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - For request-entry, redirect, auth, middleware, canonicalization, token, cookie, query-param, or session changes, treat execution order and preservation of global invariants as first-class review concerns, not implicit assumptions.
 - For schema, contract, codegen, fixture, or documentation-coupled changes, treat missing paired updates as in-scope defects, not optional cleanup.
 - For user-facing, onboarding, or developer-workflow changes, code inspection alone is not enough — verify the real flow with the strongest available walkthrough, browser, or smoke path.
+- For user-facing flows, auth/session changes, routing, form submission, CRUD, checkout/payment, editor workflows, onboarding, or cross-page state, evaluate E2E as a candidate proving check. Add or update E2E only when it is the strongest practical check for the requested behavior.
+- E2E tests that touch persistence must use an isolated SQLite-backed test environment by default. Never run E2E against production, shared staging, or a developer's normal database unless the user explicitly authorizes that exact target.
 - For security-sensitive work, make the threat model explicit in review and verification instead of assuming normal tests cover it.
 - Treat review findings as internal work items unless the user explicitly asks for a review-only report.
 - For implementation tasks, do not call the work complete until the internal review loop has already absorbed and patched all in-scope actionable findings.

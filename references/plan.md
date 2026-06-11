@@ -99,6 +99,16 @@ Split by:
 
 Do not split by arbitrary technical layers if that increases coordination cost.
 
+## E2E Planning
+
+For user-facing flows, auth/session changes, routing, form submission, CRUD, checkout/payment, editor workflows, onboarding, or cross-page state changes, explicitly evaluate whether E2E is the strongest relevant proving check.
+
+E2E is required only when it is the strongest practical way to prove the requested integrated behavior. Do not add E2E for isolated logic, copy-only, config-only, or internal utility changes when focused tests or a smoke check prove the claim better.
+
+When E2E touches persistence, the plan must identify the database target. Default to an isolated SQLite test database that is created, migrated, seeded, and reset by the E2E setup. Do not plan E2E against production, shared staging, or the developer's normal database unless the user explicitly authorized that exact target.
+
+If SQLite cannot faithfully cover the behavior, record the gap and plan the closest safe integration or smoke check instead.
+
 ## Workspace Strategy
 
 Choose the execution workspace explicitly in the plan.
@@ -133,6 +143,18 @@ The plan must include:
 - the ownership and file scope for each chosen subagent slice
 - what the main agent will do locally while subagents run
 - a short reason if all work remains direct
+
+The evaluation must be concrete. Before choosing `direct`, name at least one candidate delegation slice and reject it for a task-specific reason, or state why no bounded independent slice exists. Do not use generic reasons such as "small task" or "overhead" unless the plan also explains the actual coupling that makes delegation unsafe or wasteful.
+
+If subagent tools are not currently loaded, use the available tool-discovery mechanism once before deciding subagents are unavailable. Tool visibility is an environment fact to check, not an assumption.
+
+For every non-micro implementation task, choose `subagent` or `mixed` and dispatch at least one fresh subagent unless one of these exceptions applies:
+
+- no subagent tool is available after discovery
+- no bounded independent slice exists
+- the only possible delegation would create overlapping write scopes or unsafe coordination
+
+If implementation delegation is unsafe, the fallback should still be a bounded investigation, test-design, or first-pass review subagent whenever possible.
 
 Prefer `mixed` execution when at least one independent slice can run safely while the main agent continues non-overlapping work.
 
