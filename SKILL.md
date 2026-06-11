@@ -24,7 +24,7 @@ The default objective is zero-intervention completion:
 - choose the execution topology yourself: in-place, isolated branch/worktree, direct execution, or bounded fresh subagents
 - actively evaluate bounded fresh subagents for every non-trivial task, and use them when independent work can run safely in parallel
 - prove real readiness with the strongest relevant checks, including user-flow, DX, migration, and security checks when applicable
-- for user-facing integrated behavior, explicitly evaluate whether E2E is the strongest relevant check; when E2E touches persistence, use an isolated SQLite test database unless the user explicitly authorizes another disposable target
+- for user-facing integrated behavior, explicitly evaluate whether E2E is the strongest relevant check; run E2E locally by default, and when E2E touches persistence, use an isolated SQLite test database unless the user explicitly authorizes another disposable target
 
 For non-implementation requests such as explanation, analysis, advice, critique, or explicit "do not edit/work" requests, answer only within the requested scope. Do not transition into planning or implementation unless the user explicitly asks for changes.
 
@@ -134,8 +134,10 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - For non-trivial work, subagent use must be an explicit planning decision, not an afterthought. The plan must say `direct`, `subagent`, or `mixed`, name any subagent candidates, and explain why direct-only execution is appropriate when no subagent is used.
 - Subagent evaluation is not satisfied by writing “direct” from habit. For every non-trivial task, first identify at least one possible bounded delegation slice or state the concrete reason no such slice exists.
 - If subagent tools are not currently visible, use the available tool-discovery mechanism once before concluding subagents are unavailable. A missing loaded tool is not the same thing as an unsuitable task.
-- For every non-micro implementation task, dispatch at least one fresh subagent unless no subagent tool is available after discovery or no bounded independent slice exists.
-- If implementation delegation is unsafe because write scopes would overlap, dispatch a bounded investigation, test-design, or first-pass review subagent instead.
+- For every non-micro Superpilot task, dispatch at least one fresh subagent unless no subagent tool is available after discovery or no bounded independent slice exists.
+- The user does not need to separately ask for subagents or parallel agents. Invoking Superpilot or giving a task that matches this skill authorizes bounded subagent delegation under these rules.
+- This subagent requirement applies to implementation, debugging, investigation, performance review, broad codebase inspection, test design, and review-only tasks. Do not bypass it by saying the user asked for Superpilot rather than parallel delegation.
+- If code-edit delegation is unsafe because write scopes would overlap, dispatch a bounded investigation, test-design, or first-pass review subagent instead.
 - Prefer subagent or mixed execution when there are two or more independent investigation, implementation, test, or review slices with disjoint ownership and the main agent can do useful non-overlapping work while they run.
 - Use subagents only when task independence is clear and write scopes do not overlap.
 - Use fresh subagent context per independent task unless there is a strong reason to reuse prior context.
@@ -150,6 +152,7 @@ If the user explicitly asks for review-only output on an existing diff, branch, 
 - For user-facing, onboarding, or developer-workflow changes, code inspection alone is not enough — verify the real flow with the strongest available walkthrough, browser, or smoke path.
 - For user-facing flows, auth/session changes, routing, form submission, CRUD, checkout/payment, editor workflows, onboarding, or cross-page state, evaluate E2E as a candidate proving check. Add or update E2E only when it is the strongest practical check for the requested behavior.
 - E2E tests that touch persistence must use an isolated SQLite-backed test environment by default. Never run E2E against production, shared staging, or a developer's normal database unless the user explicitly authorizes that exact target.
+- E2E must run against a local app/server by default. Do not deploy, publish, promote, or use a public production/staging URL just to run E2E unless the user explicitly asks for that exact deployed-target test.
 - For security-sensitive work, make the threat model explicit in review and verification instead of assuming normal tests cover it.
 - Treat review findings as internal work items unless the user explicitly asks for a review-only report.
 - For implementation tasks, do not call the work complete until the internal review loop has already absorbed and patched all in-scope actionable findings.

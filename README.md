@@ -32,9 +32,9 @@ The design target is zero-intervention completion: the agent should research whe
 | **Spec** | Write a concrete spec capturing goal, requirement ledger, design, execution strategy, edge cases, and testing strategy |
 | **Plan** | Decompose into executable tasks with file targets, ownership, workspace strategy, requirement coverage, and verification steps |
 | **Debug** | When the task involves a bug: investigate root cause with evidence before proposing fixes |
-| **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green. Pre-edit investigation gate ensures files are read before edited. Test failures are triaged as in-branch, pre-existing, or flaky before investigation. For non-micro implementation tasks, dispatch at least one fresh subagent unless discovery finds no subagent tool or no safe bounded slice exists. GREEN triggers a mandatory transition to Review, not completion |
+| **Execute** | Implement with TDD discipline — failing test first, minimal fix, verify green. Pre-edit investigation gate ensures files are read before edited. Test failures are triaged as in-branch, pre-existing, or flaky before investigation. For every non-micro Superpilot task, dispatch at least one fresh subagent unless discovery finds no subagent tool or no safe bounded slice exists. GREEN triggers a mandatory transition to Review, not completion |
 | **Review** | Harsh diff-based review loops with stall detection (3 consecutive non-decreasing findings trigger escalation). Requirement-preservation, schema/contract drift, threat-model, UX, and DevEx lenses can all become findings. Optional parallel specialist reviews (Security, Performance, API Contract, Data Consistency, Test Coverage, UX/Design, DevEx) supplement the main review loop. Every patch requires a fresh re-review |
-| **Verify** | 4-level verification (Exists → Substantive → Wired → Functional) with stub detection. User-flow, onboarding/DX, migration/codegen, abuse-path, and E2E checks are required when relevant. E2E that touches persistence must use an isolated SQLite-backed test database by default. No "should work now" claims allowed |
+| **Verify** | 4-level verification (Exists → Substantive → Wired → Functional) with stub detection. User-flow, onboarding/DX, migration/codegen, abuse-path, and E2E checks are required when relevant. E2E runs locally by default, and persistence-touching E2E must use an isolated SQLite-backed test database. No "should work now" claims allowed |
 
 For explicit implementation requests, the original user request is treated as authorization to continue once must-have requirements are user-confirmed or code-proven and the spec is clear enough to write correctly. The agent stops only for real safety gates.
 
@@ -52,10 +52,10 @@ For explicit implementation requests, the original user request is treated as au
 - **Evidence over confidence** — verification must produce observable proof, not assertions
 - **Review before completion** — GREEN tests trigger review, not completion. Every patch requires a fresh re-review pass before exit
 - **Execution topology is deliberate** — the agent chooses in-place work, isolated worktrees, or fresh subagents based on task risk and context budget
-- **Subagents for non-micro work** — non-micro implementation tasks must dispatch at least one fresh subagent unless no tool or safe bounded slice exists; unsafe implementation delegation should fall back to investigation, test-design, or first-pass review delegation when possible
+- **Subagents for non-micro work** — every non-micro Superpilot task must dispatch at least one fresh subagent unless no tool or safe bounded slice exists; the user does not need to separately request parallel agents, and unsafe code-edit delegation should fall back to investigation, test-design, or first-pass review delegation when possible
 - **State trace discipline** — when changes affect visible or persisted state, review must trace divergence, correction, and boundary behavior explicitly
 - **Real workflow proof** — user-facing, onboarding, and DX changes are not considered done without an actual walkthrough or strongest equivalent proof
-- **E2E when it proves the flow** — user-facing integrated behavior evaluates E2E as a proving check; persistence-touching E2E uses disposable SQLite by default and never production, shared staging, or a normal developer database without explicit authorization
+- **Local E2E when it proves the flow** — user-facing integrated behavior evaluates E2E as a proving check; E2E runs against a local app/server by default, uses disposable SQLite for persistence by default, and never deploys or uses production/shared staging/public URLs without explicit target authorization
 - **Drift detection** — schema, contract, generated artifact, fixture, and docs drift are treated as real defects, not cleanup
 - **Assumptions-first clarification** — analyze codebase first, present assumptions with confidence levels, let user correct only what is wrong
 - **Scope discipline** — no speculative refactoring, no unrelated cleanup
@@ -130,8 +130,8 @@ Add a rule to your agent instruction file to make Superpilot the default workflo
 - For low-risk, tightly scoped tasks, use Micro Task Mode instead of the full workflow, but still run its scoped review loop before completion.
 - Before writing a full-workflow spec, confirm every must-have requirement or prove it from repository evidence.
 - Let `superpilot` own research, spec, plan, TDD, review, and verification flow.
-- Let `superpilot` preserve requirement coverage, choose isolated worktrees, and dispatch fresh subagents for non-micro implementation work unless no safe bounded slice exists.
-- For integrated user-facing behavior, evaluate E2E as a proving check; persistence-touching E2E must use an isolated SQLite-backed test database by default.
+- Let `superpilot` preserve requirement coverage, choose isolated worktrees, and dispatch fresh subagents for every non-micro Superpilot task unless no safe bounded slice exists.
+- For integrated user-facing behavior, evaluate E2E as a proving check; run E2E locally by default, and use an isolated SQLite-backed test database for persistence-touching E2E.
 - For explicit implementation requests, once must-have requirements are confirmed or proven and the work is clear enough for a correct spec, treat the original request
   as authorization to continue unless a safety gate is triggered.
 ```

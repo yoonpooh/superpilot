@@ -44,6 +44,8 @@ For user-facing flows, auth/session changes, routing, form submission, CRUD, che
 
 For E2E tests that touch persistence, verification is invalid unless the database target is identified and confirmed isolated. Default valid target: a disposable SQLite database that the test setup creates, migrates, seeds, and resets. Production, shared staging, and the developer's normal database are invalid E2E targets unless the user explicitly authorized that exact target.
 
+For E2E verification, the default valid runtime target is a local app/server. A deployed preview, public staging URL, or production URL is invalid for E2E unless the user explicitly asked to verify that exact deployed target.
+
 ## Common Claim Mapping
 
 - “tests pass” -> run the actual test command and confirm zero failures
@@ -164,6 +166,7 @@ Before final completion of an implementation task, re-read the current spec and 
 - if the diff touched schema, contracts, codegen, fixtures, or docs-coupled behavior, paired-artifact drift was explicitly checked
 - if the diff changed user-facing or developer-facing workflows, the proving walkthrough was actually run
 - if E2E was warranted, it was run against an isolated SQLite-backed test environment or the gap and safe alternative were documented
+- if E2E was run, the target was local by default; any deployed-target E2E had explicit user authorization for that exact target
 - if the diff was security-sensitive, at least one abuse-path or negative-path verification was run
 
 ## Final Summary

@@ -175,20 +175,24 @@ If the code change requires a migration, schema update, codegen refresh, fixture
 
 ## Execution Strategy
 
-Before executing the first implementation slice, re-check the plan's execution mode. For every non-micro implementation task, at least one fresh subagent must be dispatched unless no subagent tool is available after discovery or no bounded independent slice exists. If it is `subagent` or `mixed`, dispatch the first bounded subagent task as soon as its inputs are available, then continue with non-overlapping main-agent work. Do not let a planned subagent slice silently collapse into direct execution unless a concrete blocker appears; record the blocker and update the plan notes before absorbing the work.
+Before executing the first implementation slice, re-check the plan's execution mode. For every non-micro Superpilot task, at least one fresh subagent must be dispatched unless no subagent tool is available after discovery or no bounded independent slice exists. If it is `subagent` or `mixed`, dispatch the first bounded subagent task as soon as its inputs are available, then continue with non-overlapping main-agent work. Do not let a planned subagent slice silently collapse into direct execution unless a concrete blocker appears; record the blocker and update the plan notes before absorbing the work.
 
 If no subagent tool is loaded, attempt tool discovery once before deciding dispatch is impossible. If discovery fails or no suitable tool exists, record that environment fact separately from task suitability.
 
-If implementation delegation is unsafe because write scopes overlap, dispatch a bounded investigation, test-design, or first-pass review subagent instead when that can run without interfering with the main implementation. Direct-only execution for a non-micro task is allowed only when both implementation delegation and non-writing delegation are unsuitable or unavailable.
+The user does not need to separately request subagents, parallel agents, or delegation. Do not use "the user asked for Superpilot, not parallel agents" as a reason for direct-only execution.
+
+If code-edit delegation is unsafe because write scopes overlap, dispatch a bounded investigation, test-design, or first-pass review subagent instead when that can run without interfering with the main implementation. Direct-only execution for a non-micro task is allowed only when both code-edit delegation and non-writing delegation are unsuitable or unavailable.
 
 ### E2E execution
 
 When the plan calls for E2E, keep it disposable and isolated:
 
+- run E2E against a local app/server by default
 - use SQLite for any E2E persistence by default
 - create, migrate, seed, and reset the SQLite database as part of the E2E setup
 - identify the database target before running the test
 - never run E2E against production, shared staging, or the developer's normal database unless the user explicitly authorized that exact target
+- do not deploy, publish, promote, or use a public production/staging URL just to run E2E unless the user explicitly asked for that exact deployed-target test
 - if SQLite cannot cover the behavior faithfully, stop and record the gap before choosing a safe alternative check
 
 ### Direct execution
