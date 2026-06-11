@@ -103,6 +103,10 @@ Do not split by arbitrary technical layers if that increases coordination cost.
 
 For user-facing flows, auth/session changes, routing, form submission, CRUD, checkout/payment, editor workflows, onboarding, or cross-page state changes, explicitly evaluate whether E2E is the strongest relevant proving check.
 
+For user-facing sorting, filtering, pagination, tabs, dropdowns, search, XHR/Ajax, or infinite-scroll changes, plan a local browser smoke or E2E check. The check should cover visible UI state, request parameters, rendered response, and follow-up navigation/loading behavior.
+
+If the local app may point at production or shared data, plan the isolated local browser/E2E target before implementation is complete. Prefer a SQLite-backed test environment. Do not plan to substitute Blade, unit, service, or feature tests for required browser smoke solely because the default local environment is unsafe.
+
 E2E is required only when it is the strongest practical way to prove the requested integrated behavior. Do not add E2E for isolated logic, copy-only, config-only, or internal utility changes when focused tests or a smoke check prove the claim better.
 
 When E2E touches persistence, the plan must identify the database target. Default to an isolated SQLite test database that is created, migrated, seeded, and reset by the E2E setup. Do not plan E2E against production, shared staging, or the developer's normal database unless the user explicitly authorized that exact target.
@@ -142,8 +146,12 @@ The plan must include:
 
 - the chosen mode: `direct`, `subagent`, or `mixed`
 - candidate slices that could run in fresh subagents
+- stage-level parallel opportunities for exploration, research, implementation, tests, review, and verification
+- code-edit, test-edit, fixture, migration, documentation, or generated-artifact slices considered before choosing read-only delegation
 - the ownership and file scope for each chosen subagent slice
 - what the main agent will do locally while subagents run
+- how each subagent slice reduces elapsed time, removes work from the critical path, or answers a blocking question
+- what usable output will count as a successful returned subagent result
 - a short reason if all work remains direct
 
 The evaluation must be concrete. Before choosing `direct`, name at least one candidate delegation slice and reject it for a task-specific reason, or state why no bounded independent slice exists. Do not use generic reasons such as "small task" or "overhead" unless the plan also explains the actual coupling that makes delegation unsafe or wasteful.
@@ -160,7 +168,17 @@ The user does not need to separately request subagents, parallel agents, or dele
 
 This requirement applies to implementation, debugging, investigation, performance review, broad codebase inspection, test design, and review-only planning. If code-edit delegation is unsafe, the fallback should still be a bounded investigation, test-design, or first-pass review subagent whenever possible.
 
-Prefer `mixed` execution when at least one independent slice can run safely while the main agent continues non-overlapping work.
+Mandatory subagent use exists to reduce elapsed time through real parallelism, not to satisfy a checkbox. Prefer `mixed` execution when at least one independent slice can run safely while the main agent continues non-overlapping work.
+
+Apply the same parallel-first posture across all full-workflow stages. In the plan, identify independent work that can run concurrently during exploration, research, implementation, test writing, test execution, review, and verification. Do not serialize these stages by habit when subagents or parallel runtime tools can safely reduce elapsed time.
+
+For non-micro implementation work, prefer at least one code-edit or test-edit subagent when file ownership can stay disjoint. Before choosing read-only delegation, explicitly evaluate code-edit, test-edit, fixture, migration, documentation, and generated-artifact slices.
+
+One read-only explorer is rarely enough for non-micro implementation work when independent test-edit, code-edit, review, or verification slices can run in parallel. The plan should consider whether to dispatch more than one bounded subagent across different stages, not stop at the first explorer that satisfies the minimum requirement.
+
+A read-only investigation, test-design, or review subagent is a fallback, not the default. It is acceptable only when edit delegation would overlap or increase integration risk, or when it answers a question that would otherwise block or materially slow the main agent. Do not dispatch decorative subagents that produce information the main agent will not use or could gather faster while already working.
+
+A dispatched subagent counts only if its result is received, read, and either incorporated into the work or explicitly rejected with a reason. Crashed, closed, noop, cancelled, timed-out, or unretrieved subagents do not satisfy the mandatory subagent requirement.
 
 ### Use direct execution when:
 

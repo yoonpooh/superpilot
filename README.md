@@ -52,10 +52,14 @@ For explicit implementation requests, the original user request is treated as au
 - **Evidence over confidence** — verification must produce observable proof, not assertions
 - **Review before completion** — GREEN tests trigger review, not completion. Every patch requires a fresh re-review pass before exit
 - **Execution topology is deliberate** — the agent chooses in-place work, isolated worktrees, or fresh subagents based on task risk and context budget
-- **Subagents for non-micro work** — every non-micro Superpilot task must dispatch at least one fresh subagent unless no tool or safe bounded slice exists; the user does not need to separately request parallel agents, and unsafe code-edit delegation should fall back to investigation, test-design, or first-pass review delegation when possible
+- **Subagents for non-micro work** — every non-micro Superpilot task must dispatch fresh subagents unless no tool or safe bounded slice exists; prefer code-edit or test-edit slices when ownership is disjoint, and do not stop at one read-only explorer when test, review, or verification slices can run in parallel
+- **Parallel-first stages** — exploration, research, implementation, tests, review, and verification should run independent slices concurrently when that safely reduces elapsed time
+- **Compliance blockers** — missing required subagent, review, verification, or interactive browser-smoke criteria are blockers to completion, not just final-report caveats
 - **State trace discipline** — when changes affect visible or persisted state, review must trace divergence, correction, and boundary behavior explicitly
 - **Real workflow proof** — user-facing, onboarding, and DX changes are not considered done without an actual walkthrough or strongest equivalent proof
 - **Local E2E when it proves the flow** — user-facing integrated behavior evaluates E2E as a proving check; E2E runs against a local app/server by default, uses disposable SQLite for persistence by default, and never deploys or uses production/shared staging/public URLs without explicit target authorization
+- **Browser smoke for interactive UI** — sorting, filtering, pagination, tabs, dropdowns, search, XHR, and infinite-scroll changes require local browser smoke or E2E proof beyond focused unit/service tests
+- **Isolated browser target** — production or shared-database risk requires an isolated local browser/E2E target, not weaker substitute tests or a completion claim
 - **Drift detection** — schema, contract, generated artifact, fixture, and docs drift are treated as real defects, not cleanup
 - **Assumptions-first clarification** — analyze codebase first, present assumptions with confidence levels, let user correct only what is wrong
 - **Scope discipline** — no speculative refactoring, no unrelated cleanup
@@ -130,7 +134,7 @@ Add a rule to your agent instruction file to make Superpilot the default workflo
 - For low-risk, tightly scoped tasks, use Micro Task Mode instead of the full workflow, but still run its scoped review loop before completion.
 - Before writing a full-workflow spec, confirm every must-have requirement or prove it from repository evidence.
 - Let `superpilot` own research, spec, plan, TDD, review, and verification flow.
-- Let `superpilot` preserve requirement coverage, choose isolated worktrees, and dispatch fresh subagents for every non-micro Superpilot task unless no safe bounded slice exists.
+- Let `superpilot` preserve requirement coverage, choose isolated worktrees, and dispatch fresh subagents for every non-micro Superpilot task unless no safe bounded slice exists; prefer safe code/test-edit slices before read-only fallback, parallelize independent stage work, and failed/noop/unretrieved attempts do not count.
 - For integrated user-facing behavior, evaluate E2E as a proving check; run E2E locally by default, and use an isolated SQLite-backed test database for persistence-touching E2E.
 - For explicit implementation requests, once must-have requirements are confirmed or proven and the work is clear enough for a correct spec, treat the original request
   as authorization to continue unless a safety gate is triggered.

@@ -181,7 +181,23 @@ If no subagent tool is loaded, attempt tool discovery once before deciding dispa
 
 The user does not need to separately request subagents, parallel agents, or delegation. Do not use "the user asked for Superpilot, not parallel agents" as a reason for direct-only execution.
 
-If code-edit delegation is unsafe because write scopes overlap, dispatch a bounded investigation, test-design, or first-pass review subagent instead when that can run without interfering with the main implementation. Direct-only execution for a non-micro task is allowed only when both code-edit delegation and non-writing delegation are unsuitable or unavailable.
+Mandatory subagent use exists to reduce elapsed time through real parallelism, not to satisfy a checkbox. After dispatching a subagent, the main agent should continue useful non-overlapping work instead of waiting idly unless the subagent is answering a truly blocking question.
+
+Use safe runtime parallelism as well as subagents. Independent file reads, grep searches, syntax checks, focused tests, build checks, and non-overlapping verification commands should run concurrently when the tooling supports it and outputs can be reviewed clearly.
+
+For non-micro implementation work, prefer at least one code-edit or test-edit subagent when file ownership can stay disjoint. Before falling back to read-only delegation, explicitly check whether code-edit, test-edit, fixture, migration, documentation, or generated-artifact work can be delegated safely.
+
+Do not stop at one read-only explorer when other independent slices remain. After the first subagent returns, re-check whether test-edit, code-edit, fixture, review, or verification subagents can now run safely while the main agent continues integration work.
+
+If edit delegation is unsafe because write scopes overlap or integration risk would rise, dispatch a bounded investigation, test-design, or first-pass review subagent instead when that can run without interfering with the main implementation and materially reduces the main agent's work or risk. Direct-only execution for a non-micro task is allowed only when both useful edit delegation and useful non-writing delegation are unsuitable or unavailable.
+
+A dispatched subagent counts only after the main agent receives and reads its result, then incorporates it into the work or explicitly rejects it with a reason. Crashed, closed, noop, cancelled, timed-out, or unretrieved subagents are failed attempts, not successful delegation.
+
+If a mandatory subagent fails before producing usable output, dispatch a replacement bounded slice when any useful independent slice remains. If no replacement slice remains, record the failure, why no replacement is useful, and why direct completion is still valid.
+
+Before declaring implementation GREEN, re-check whether any required parallel slice or interactive UI browser smoke remains undone. If a test-edit, review, verification, or local browser smoke slice is still required and safe to run, dispatch or run it before leaving implementation.
+
+If required browser smoke/E2E is unsafe because the default local app points at production or shared data, create or switch to an isolated local test target before leaving implementation. If isolation cannot be established safely, stop with a blocker instead of substituting lower-level tests and claiming completion.
 
 ### E2E execution
 
@@ -206,13 +222,16 @@ Use subagents only when independence is real.
 Good subagent tasks:
 
 - implement a bounded module change
+- add or update tests in a disjoint test file
+- update fixtures, migrations, generated artifacts, or documentation in clearly owned files
 - investigate a bounded code path
-- add tests in a disjoint test file
 - perform a bounded first-pass review of an isolated file group
 
 Bad subagent tasks:
 
 - “look around and tell me what you think”
+- decorative read-only checks that do not reduce elapsed time, remove real work, or answer a blocking question
+- crashed, closed, noop, cancelled, timed-out, or unretrieved attempts counted as successful delegation
 - editing overlapping files
 - splitting one tightly coupled function chain into multiple owners
 - “edit this line to X” without TDD context

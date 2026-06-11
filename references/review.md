@@ -25,6 +25,14 @@ If the task itself is review-only, this stage becomes the primary deliverable:
 - do not pad the review with unrelated unchanged code
 - compare the diff against the spec requirement ledger, or against the original user request and local guardrails in Micro Task Mode, so missing requested behavior is visible during review, not after handoff
 
+## Parallel Review
+
+Use parallel review whenever independent lenses or file groups exist. Dispatch bounded fresh subagents for specialist passes such as security, data consistency, test coverage, UX/DX, contract drift, or isolated file-group review when they can run while the main agent continues the primary diff review.
+
+Parallel review is additive, not a replacement. The main agent still owns final integration, final whole-diff review, and the zero-findings exit condition.
+
+Do not wait idly for a review subagent unless it is answering a blocking question. Continue non-overlapping trace work, checklist work, or verification preparation while it runs.
+
 ## Mandatory Trace Activities
 
 These are not checklist items to glance at. They are concrete activities that require reading and following actual code paths in the diff. Do all that apply.

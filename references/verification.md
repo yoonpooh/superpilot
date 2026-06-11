@@ -18,6 +18,12 @@ For every completion claim:
 
 Skip any step and the claim is unverified.
 
+## Parallel Verification
+
+Run independent verification checks in parallel when safe: focused tests, lint, syntax checks, build checks, grep-based loadability checks, smoke commands, and non-overlapping manual/browser verification preparation. Use parallel runtime tools for commands and bounded subagents for independent verification investigation when that reduces elapsed time.
+
+Parallel verification does not weaken evidence. The main agent must still read outputs, confirm exit status, reconcile conflicting results, and decide whether the combined evidence supports the completion claim.
+
 ## Required Mapping
 
 Match verification strength to the change:
@@ -41,6 +47,15 @@ Do not treat proof of the first claim as proof of the second.
 If ideal coverage is unavailable, run the strongest available alternative and report the gap briefly.
 
 For user-facing flows, auth/session changes, routing, form submission, CRUD, checkout/payment, editor workflows, onboarding, or cross-page state changes, verification must state whether E2E was the strongest practical check. If E2E was warranted but not run, report why and run the closest safe executable alternative.
+
+For user-facing sorting, filtering, pagination, tabs, dropdowns, search, XHR/Ajax, or infinite-scroll changes, focused unit/service tests are not enough. Run a local browser smoke or E2E check and verify:
+
+- visible UI state, such as the option text, selected value, or active class
+- request parameters, such as query strings, form values, or XHR payload
+- rendered response content after the interaction
+- follow-up navigation or loading behavior, such as pagination or infinite scroll
+
+Do not downgrade this requirement to Blade rendering, unit, service, or feature tests because the default local app points at a production or shared database. First create or switch to an isolated local test target, preferably SQLite-backed. If isolation cannot be established safely, report the blocker and do not claim completion.
 
 For E2E tests that touch persistence, verification is invalid unless the database target is identified and confirmed isolated. Default valid target: a disposable SQLite database that the test setup creates, migrates, seeds, and resets. Production, shared staging, and the developer's normal database are invalid E2E targets unless the user explicitly authorized that exact target.
 
@@ -165,9 +180,27 @@ Before final completion of an implementation task, re-read the current spec and 
 - if the diff touched request entry, redirect, auth, middleware, canonicalization, token, cookie, query param, or session behavior, both the new behavior and the preserved global invariants were explicitly verified
 - if the diff touched schema, contracts, codegen, fixtures, or docs-coupled behavior, paired-artifact drift was explicitly checked
 - if the diff changed user-facing or developer-facing workflows, the proving walkthrough was actually run
+- if the diff changed sorting, filtering, pagination, tabs, dropdowns, search, XHR/Ajax, or infinite-scroll behavior, local browser smoke or E2E verified visible UI state, request parameters, rendered response, and follow-up navigation/loading behavior
 - if E2E was warranted, it was run against an isolated SQLite-backed test environment or the gap and safe alternative were documented
 - if E2E was run, the target was local by default; any deployed-target E2E had explicit user authorization for that exact target
 - if the diff was security-sensitive, at least one abuse-path or negative-path verification was run
+
+## Superpilot Compliance Audit
+
+Before final handoff, classify the required Superpilot criteria as `충족`, `부분 충족`, or `미충족`.
+
+Required criteria include:
+
+- mandatory subagent delegation, including replacement for failed/noop/unretrieved attempts
+- code-edit or test-edit subagent preference before read-only fallback when ownership is disjoint
+- additional test, review, or verification subagents when independent slices remain after an explorer
+- local browser smoke or E2E for interactive UI changes listed above
+- isolated local browser/E2E target setup when the default local environment risks production or shared data
+- local E2E target and isolated SQLite persistence when E2E touches persistence
+- final review loop and fresh final review pass
+- strongest relevant tests, builds, or smoke checks
+
+Any required criterion marked `미충족` is a blocker. Remediate it before completion. `부분 충족` is also a blocker when the missing part is one of the required browser/E2E, subagent, review, or final-audit gates. If remediation is impossible or unsafe, report the blocker and do not claim full completion.
 
 ## Final Summary
 
@@ -219,10 +252,12 @@ Before the final handoff for an implementation task:
 4. confirm the review loop reached zero findings
 5. confirm a fresh final review pass after the last patch also reached zero findings
 6. run the strongest relevant verification
-7. confirm the diff matches the claimed result
-8. only then write the completion summary
+7. run the Superpilot compliance audit and confirm no required criterion is `미충족`
+8. confirm the diff matches the claimed result
+9. only then write the completion summary
 
 If step 5 is missing, do not claim the task is complete even if tests or builds are green.
+If step 7 has any required `미충족`, do not claim full completion.
 
 Exit marker: `## VERIFICATION PASSED`
 
